@@ -20,4 +20,13 @@
         from sys_user
 
     </select>
+
+    <!--根据用户名和密码查询用户-->
+    <select id="findUserByNameAndPassword" parameterType="map" resultType="map">
+        select
+        user_name,
+        role_id
+        from sys_user
+        where user_name=#{userName} and password=#{password}
+    </select>
 </mapper>

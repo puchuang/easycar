@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 用户管理 -->
+<mapper namespace="wxmapper">
+
+    <!--根据条件查询已发布的行程(司机) -->
+    <select id="getDriverTripListByCondition" parameterType="map" resultType="map">
+        select
+            a.SerialNo,
+            a.LinkmanName,
+            a.Phone,
+            a.StartStation,
+            (select c.RegionName from ecs_dic_region c where a.StartCityId = c.RegionId) StartCity,
+            (select c.RegionName from ecs_dic_region c where a.EndCityId = c.RegionId) EndCity,
+            a.Destination,
+            (select b.DicValue from ecs_dic_system b where a.CarModelId = b.DicId) CarModel,
+            (select b.DicValue from ecs_dic_system b where a.CartBrandId = b.DicId) CartBrand,
+            a.CarNumber,
+            a.SeatTotal,
+            a.SeatRemain,
+            a.Price,
+            a.StartTime,
+            a.Remark
+        from ecu_trip_driver a
+        where
+          a.IsEffective= '1'
+        <if test="startCity != null and startCity != '' ">
+              and a.StartCityId=#{startCity}
+        </if>
+        <if test="endCity != null and endCity != '' ">
+            and a.EndCityId=#{endCity}
+        </if>
+        <if test="startStation != null and startStation != '' ">
+            and a.StartStation=#{startStation}
+        </if>
+        <if test="startDate != null and startDate != '' ">
+            and date_format(StartTime,'%Y-%m-%d')=#{startDate}
+        </if>
+        order by a.PublishTime desc
+        limit ${start},${pageSize}
+    </select>
+
+    <!--根据条件查询已发布的行程(乘客) -->
+    <select id="getCustomerTripListByCondition" parameterType="map" resultType="map">
+        select
+        a.SerialNo,
+        a.LinkmanName,
+        a.Phone,
+        a.StartStation,
+        (select c.RegionName from ecs_dic_region c where a.StartCityId = c.RegionId) StartCity,
+        (select c.RegionName from ecs_dic_region c where a.EndCityId = c.RegionId) EndCity,
+        a.Destination,
+        a.StartTime,
+        a.Remark
+        from ecu_trip_customer a
+        where
+        a.IsEffective= '1'
+        <if test="startCity != null and startCity != '' ">
+            and a.StartCityId=#{startCity}
+        </if>
+        <if test="endCity != null and endCity != '' ">
+            and a.EndCityId=#{endCity}
+        </if>
+        <if test="startStation != null and startStation != '' ">
+            and a.StartStation=#{startStation}
+        </if>
+        <if test="startDate != null and startDate != '' ">
+            and date_format(StartTime,'%Y-%m-%d')=#{startDate}
+        </if>
+        order by a.PublishTime desc
+        limit  ${start},${pageSize}
+    </select>
+
+    <!--根据流水号查询行程详情-->
+    <select id="getTripBySerialNo" parameterType="java.lang.String" resultType="map">
+        select
+            a.SerialNo,
+            a.LinkmanName,
+            a.Phone,
+            a.StartStation,
+            (select c.RegionName from ecs_dic_region c where a.StartCityId = c.RegionId) StartCity,
+            (select c.RegionName from ecs_dic_region c where a.EndCityId = c.RegionId) EndCity,
+            a.Destination,
+            (select b.DicValue from ecs_dic_system b where a.CarModelId = b.DicId) CarModel,
+            (select b.DicValue from ecs_dic_system b where a.CartBrandId = b.DicId) CartBrand,
+            a.CarNumber,
+            a.SeatTotal,
+            a.SeatRemain,
+            a.Price,
+            a.StartTime,
+            a.Remark,
+            b.Nickname,
+            b.Headim
+        from ecu_trip_driver a.LinkmanId = e.userId
+        left join ecu_user e on a.
+        where a.SerialNo=#{serialNo}
+
+    </select>
+
+    <!--保存行程信息-->
+    <insert id="insertTrip" parameterType="map">
+        insert into
+        ecu_trip_driver
+            (
+            LinkmanName,
+            LinkmanId,
+            Phone,
+            StartCityId,
+            StartStation,
+            EndCityId,
+            Destination,
+            Byway,
+            CartBrandId,
+            CarModelId,
+            CarNumber,
+            SeatTotal,
+            Price,
+            StartTime,
+            Remark,
+            Top,
+            SeatRemain,
+            PublishTime
+            )
+            values
+            (
+            #{LinkmanName},
+            #{LinkmanId},
+            #{Phone},
+            #{StartCityId},
+            #{StartStation},
+            #{EndCityId},
+            #{Destination},
+            #{Byway},
+            #{CartBrandId},
+            #{CarModelId},
+            #{CarNumber},
+            #{SeatTotal},
+            #{Price},
+            #{StartTime},
+            #{Remark},
+            #{Top},
+            #{SeatRemain},
+            now()
+            )
+    </insert>
+    <!--根据用户名和密码查询用户-->
+    <select id="findUserByNameAndPassword" parameterType="map" resultType="map">
+        select
+        user_name,
+        role_id
+        from sys_user
+        where user_name=#{userName} and password=#{password}
+    </select>
+</mapper>

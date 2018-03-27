@@ -14,4 +14,8 @@ public class UserService {
     public Map<String,String> getUser(Map<String,Object> map) throws Exception{
         return (Map<String,String>)dao.findForObject("userMapper.getUserByNameAndPassword",map);
     }
+
+    public Map<String,String> findUserByNameAndPassword(Map<String,String> map) throws Exception{
+        return (Map<String,String>)dao.findForObject("userMapper.findUserByNameAndPassword",map);
+    }
 }

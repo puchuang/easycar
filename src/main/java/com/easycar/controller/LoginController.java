@@ -45,4 +45,27 @@ public class LoginController extends BaseController {
         }
         return returnMp;
     }
+
+
+    @RequestMapping("/login")
+    @ResponseBody
+    public ModelAndView login(String userName,String password) throws Exception {
+        Map<String,String> map = new HashMap<String,String>();
+        ModelAndView mv = new ModelAndView();
+        map.put("userName",userName);
+        map.put("password",password);
+        String msg = "";
+        //根据用户名和密码查找用户
+        Map<String,String>  userMap= userService.findUserByNameAndPassword(map);
+        if(userMap == null || "".equals(userMap.get("user_name"))) {
+            msg = "用户名或密码错误！";
+        }else if("admin".equals(userMap.get("user_name")) && "0".equals(userMap.get("role_id"))) {
+            //只有登陆者是admin且角色id是‘0’时，则登陆者为最高权限管理员
+            mv.setViewName("user/admin_index");
+        }else{
+            mv.setViewName("user/user_index");
+        }
+        mv.addObject("user_name",userMap.get("user_name"));
+        return mv;
+    }
 }
