@@ -47,18 +47,18 @@
                                 <div class="alert alert-success" id="examplebtTableEventsResult" role="alert">
                                     事件结果
                                 </div>
-                                <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
-                                    <button type="button" class="btn btn-outline btn-default">
+                                <div class="btn-group hidden-xs" id="tableListToolbar" role="group">
+                                    <button id="btn_add" type="button" class="btn btn-outline btn-default">
                                         <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>
                                     </button>
-                                    <button type="button" class="btn btn-outline btn-default">
-                                        <i class="glyphicon glyphicon-heart" aria-hidden="true"></i>
+                                    <button id="btn_edit" type="button" class="btn btn-outline btn-default">
+                                        <i class="glyphicon glyphicon-edit" aria-hidden="true"></i>
                                     </button>
-                                    <button type="button" class="btn btn-outline btn-default">
+                                    <button id="btn_delete" type="button" class="btn btn-outline btn-default">
                                         <i class="glyphicon glyphicon-trash" aria-hidden="true"></i>
                                     </button>
                                 </div>
-                                <table id="exampleTableEvents" data-height="530" data-mobile-responsive="true">
+                                <table id="tableList" data-height="530" data-mobile-responsive="true">
                                     <thead>
                                         <tr>
                                             <th data-field="state" data-checkbox="true"></th>
@@ -85,6 +85,7 @@
     <script src="../static/js/plugins/bootstrap-table/bootstrap-table.min.js"></script>
     <script src="../static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js"></script>
     <script src="../static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
-    <script src="../static/js/demo/bootstrap-table-demo.min.js"></script>
+    <script src="../static/js/plugins/layer/layer.min.js"></script>
+    <script src="test.js"></script>
 </body>
 </html>
