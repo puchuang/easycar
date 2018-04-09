@@ -69,22 +69,25 @@ var ButtonInit = function () {
 
     oInit.Init = function () {
         $("#btn_add").click(function () {
-            //layer.msg('内容');
+            layer.msg('添加开始');
             layer.open({
-                type: 1,
-                area:'600px',
+                type: 2,
+                area:['770px','510px'],
                 title: '添加行程',
-                content: '这里写内容',
+                content: 'form.html',
                 offset: 'r',
                 shadeClose: true,
                 maxmin: true,
-                shade:0.1
+                shade: 0.1,
+                btn: ['确认', '取消'],
+                yes: function (index, layero) {
+                    var iframeWin = window[layero.find('iframe')[0]['name']];
+                    iframeWin.submitForm();
+                },
+                btn2: function (index, layero) {
+                    layer.msg('取消添加');
+                }
             });
-            $("#myModalLabel").text("新增");
-            $("#myModal").find(".form-control").val("");
-            $('#myModal').modal()
-
-            postdata.DEPARTMENT_ID = "";
         });
 
         $("#btn_edit").click(function () {
@@ -99,6 +102,25 @@ var ButtonInit = function () {
 
                 return;
             }
+            layer.open({
+                type: 2,
+                area: ['770px', '510px'],
+                title: '添加行程',
+                content: 'form.html',
+                offset: 'r',
+                shadeClose: true,
+                maxmin: true,
+                shade: 0.1,
+                btn: ['确认', '取消'],
+                yes: function (index, layero) {                    
+                    //var iframeWin = window[layero.find('iframe')[0]['name']];
+                    //iframeWin.submitForm();
+                },
+                btn2: function (index, layero) {
+                    layer.msg('取消添加');
+                }
+
+            });
             $("#myModalLabel").text("编辑");
             $("#txt_departmentname").val(arrselections[0].DEPARTMENT_NAME);
             $("#txt_parentdepartment").val(arrselections[0].PARENT_ID);
