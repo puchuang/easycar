@@ -145,12 +145,14 @@
             now()
             )
     </insert>
-    <!--根据用户名和密码查询用户-->
-    <select id="findUserByNameAndPassword" parameterType="map" resultType="map">
+    <!--根据openid查询用户-->
+    <select id="findUserByOpenid" parameterType="string" resultType="map">
         select
-        user_name,
-        role_id
-        from sys_user
-        where user_name=#{userName} and password=#{password}
+        userId,
+        Nickname,
+        Headimgurl,
+        Phone
+        from ecu_user
+        where Openid=#{openid}
     </select>
 </mapper>

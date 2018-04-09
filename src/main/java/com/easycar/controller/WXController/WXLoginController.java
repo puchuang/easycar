@@ -127,4 +127,13 @@ public class WXLoginController extends BaseController{
         returnMap.put("outContent",outContent);
         return returnMap;
     }
+
+    @RequestMapping("/login")
+    @ResponseBody
+    public Map<String,Object> login(String reqJson) {
+        Map<String,Object> map = new HashMap<String,Object>();
+
+        Map<String,Object> loginMap = wXservice.systemLogin(reqJson);
+        return  map;
+    }
 }

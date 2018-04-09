@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 用户管理 -->
+<mapper namespace="commonMapper">
+
+    <!--根据用户名和密码查询用户  -->
+    <select id="findByType" parameterType="string" resultType="map">
+        select
+        a.user_name,
+        a.phone_no,
+        a.address
+        from ecs_dic_system a where a.DicType=#{type}
+    </select>
+
+    <select id="userCount" parameterType="map" resultType="java.lang.Integer">
+        select
+        count(1)
+        from sys_user
+
+    </select>
+
+    <!--根据用户名和密码查询用户-->
+    <select id="findUserByNameAndPassword" parameterType="map" resultType="map">
+        select
+        user_name,
+        role_id
+        from sys_user
+        where user_name=#{userName} and password=#{password}
+    </select>
+</mapper>

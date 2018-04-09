@@ -14,6 +14,7 @@
 
         <typeAlias type="java.util.Map" alias="map"/>
         <typeAlias type="java.util.List" alias="list"/>
+        <typeAlias type="java.lang.String" alias="string"/>
         <typeAlias type="com.easycar.util.PageData" alias="pd"/>
         <!-- 分页 -->
         <typeAlias type="com.easycar.entity.Page" alias="Page"/>
