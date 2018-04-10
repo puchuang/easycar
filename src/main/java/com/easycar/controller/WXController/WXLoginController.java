@@ -1,20 +1,19 @@
 package com.easycar.controller.WXController;
 
+import com.alibaba.fastjson.JSONObject;
 import com.easycar.controller.BaseController;
 import com.easycar.service.WXService.WXservice;
-import com.easycar.util.Logger;
+import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import java.util.*;
 
-
-@RequestMapping("WxLogin")
+@Controller
+@RequestMapping("*/WxLogin")
 public class WXLoginController extends BaseController{
 
     @Resource(name = "wxService")
@@ -22,32 +21,38 @@ public class WXLoginController extends BaseController{
 
     /**
      * 根据条件获取行程列表
-     * @param pageIndx
-     * @param triptype
-     * @param startCity
-     * @param endCity
-     * @param startDate
+
      * @return
      * @throws Exception
      */
     @RequestMapping("/getTripList")
     @ResponseBody
-    public Map<String,Object> getTripList(String pageIndx, String triptype, String startCity, String endCity, String startDate) {
+//    public Map<String,Object> getTripList(String pageIndx, String triptype, String startCity, String endCity, String startDate) {
+    public Map<String,Object> getTripList(HttpServletRequest request) {
         Map<String,Object> returnMap = new HashMap<String,Object>();
         Map<String,Object> map = new HashMap<String, Object>();
         List<Map<String,String>> list = new ArrayList<Map<String, String>>();
         String outType = "fail";
+        Integer count=0;
+
+        String limit = request.getParameter("limit");
+        String offset = request.getParameter("offset");
+        map.put("offset",Integer.parseInt(offset));
+        map.put("limit",Integer.parseInt(limit));
+
         //默认已前台校验非空，后台不再校验
-        int pageNumber = Integer.parseInt(pageIndx);
-        int pageSize = 10;
-        int start = (pageNumber-1)*pageSize+1;//
-        map.put("start",start);
-        map.put("pageSize",pageSize);//默认每页10条
-        map.put("triptype",triptype);
-        map.put("startCity",startCity);
-        map.put("endCity",endCity);
-        map.put("startDate",startDate);
+//        int pageNumber = Integer.parseInt(pageIndx);
+//        int pageNumber = 1;
+//        int pageSize =
+//        int start = (pageNumber-1)*pageSize+1;//
+//        map.put("start",start);
+//        map.put("pageSize",pageSize);//默认每页10条
+//        map.put("triptype",triptype);
+//        map.put("startCity",startCity);
+//        map.put("endCity",endCity);
+//        map.put("startDate",startDate);
         try {
+            count = wXservice.getCount(map);
             list = wXservice.getTripListByCondition(map);
             outType = "success";
             logger.info("查询行程列表成功");
@@ -57,8 +62,9 @@ public class WXLoginController extends BaseController{
             e.printStackTrace();
         }
 
-        returnMap.put("outType",outType);
-        returnMap.put("data",list);
+//        returnMap.put("outType",outType);
+        returnMap.put("total",count);
+        returnMap.put("rows",list);
         return returnMap;
     }
 

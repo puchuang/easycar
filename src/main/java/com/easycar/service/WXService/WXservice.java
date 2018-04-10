@@ -1,6 +1,5 @@
 package com.easycar.service.WXService;
 
-import com.alibaba.druid.util.HttpClientUtils;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -10,7 +9,6 @@ import com.easycar.util.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,8 +23,7 @@ public class WXservice {
 
     public List<Map<String,String>> getTripListByCondition(Map<String, Object> map) throws Exception {
         List<Map<String,String>> tripList = new ArrayList<Map<String, String>>();
-        //根据是人找车还是车找人查询不同的列表（方便后续管理）
-        if(map != null && !"".equals(map.get("triptype"))) {
+        /*if(map != null && !"".equals(map.get("triptype"))) {
             if("1".equals(map.get("triptype"))) {//1:车找人
                 tripList= (List<Map<String,String>>)dao.findForObject("wxmapper.getDriverTripListByCondition",map);
             }else if("0".equals(map.get("triptype"))) {//0:人找车
@@ -35,10 +32,14 @@ public class WXservice {
                 tripList = null;
             }
 
-        }
+        }*/
+        tripList= (List<Map<String,String>>)dao.findForList("wxmapper.getDriverTripListByCondition",map);
         return tripList;
     }
 
+    public Integer getCount(Map<String, Object> map) throws Exception{
+        return (Integer)dao.findForObject("wxmapper.getCount",map);
+    }
     /**
      * 根据流水号查找行程详情
      * @param serialNo

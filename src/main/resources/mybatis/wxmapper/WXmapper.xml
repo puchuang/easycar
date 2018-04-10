@@ -39,7 +39,26 @@
             and date_format(StartTime,'%Y-%m-%d')=#{startDate}
         </if>
         order by a.PublishTime desc
-        limit ${start},${pageSize}
+        limit ${offset},${limit}
+    </select>
+
+    <select id="getCount" parameterType="map" resultType="java.lang.Integer">
+        select count(1)
+        from ecu_trip_driver a
+        where
+        a.IsEffective= '1'
+        <if test="startCity != null and startCity != '' ">
+            and a.StartCityId=#{startCity}
+        </if>
+        <if test="endCity != null and endCity != '' ">
+            and a.EndCityId=#{endCity}
+        </if>
+        <if test="startStation != null and startStation != '' ">
+            and a.StartStation=#{startStation}
+        </if>
+        <if test="startDate != null and startDate != '' ">
+            and date_format(StartTime,'%Y-%m-%d')=#{startDate}
+        </if>
     </select>
 
     <!--根据条件查询已发布的行程(乘客) -->
