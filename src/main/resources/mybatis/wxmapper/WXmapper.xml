@@ -21,7 +21,7 @@
             a.SeatTotal,
             a.SeatRemain,
             a.Price,
-            a.StartTime,
+            date_format(a.StartTime,'%Y-%m-%d %H-%i-%s')StartTime,
             a.Remark
         from ecu_trip_driver a
         where
