@@ -20,7 +20,12 @@ public class Page
     {
         try
         {
-            this.showCount = Integer.parseInt(Tools.readTxtFile(Const.PAGE));
+//            this.showCount = Integer.parseInt(Tools.readTxtFile(Const.PAGE));
+            if (pd.getString("showCount") != null && "".equals(pd.getString("showCount"))){
+                this.showCount = Integer.parseInt(pd.getString(showCount));
+            }else{
+                this.showCount = 10;//如果没有showCount参数，则默认设置为10
+            }
         }
         catch (Exception e)
         {

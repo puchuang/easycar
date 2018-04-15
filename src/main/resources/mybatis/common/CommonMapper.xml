@@ -29,4 +29,13 @@
         from sys_user
         where user_name=#{userName} and password=#{password}
     </select>
+
+    <!--根据区域类型查找区域下拉框-->
+    <select id="getRegionsByType" parameterType="string" resultType="map">
+        select
+        RegionId code,
+        RegionName name
+        from ecs_dic_region
+        where regionType=#{codeSelect}
+    </select>
 </mapper>

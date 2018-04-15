@@ -4,8 +4,11 @@ import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.easycar.dao.DaoSupport;
+import com.easycar.entity.Page;
+import com.easycar.util.DateUtil;
 import com.easycar.util.HttpRequestUtil;
 import com.easycar.util.Logger;
+import com.easycar.util.PageData;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -21,25 +24,11 @@ public class WXservice {
 
     private Logger logger;
 
-    public List<Map<String,String>> getTripListByCondition(Map<String, Object> map) throws Exception {
-        List<Map<String,String>> tripList = new ArrayList<Map<String, String>>();
-        /*if(map != null && !"".equals(map.get("triptype"))) {
-            if("1".equals(map.get("triptype"))) {//1:车找人
-                tripList= (List<Map<String,String>>)dao.findForObject("wxmapper.getDriverTripListByCondition",map);
-            }else if("0".equals(map.get("triptype"))) {//0:人找车
-                tripList= (List<Map<String,String>>)dao.findForObject("wxmapper.getCustomerTripListByCondition",map);
-            }else{//否则证明参数非法，直接返回null
-                tripList = null;
-            }
+    public List<Map<String,String>> getTripListByCondition(Page page) throws Exception {
 
-        }*/
-        tripList= (List<Map<String,String>>)dao.findForList("wxmapper.getDriverTripListByCondition",map);
-        return tripList;
+        return (List<Map<String,String>>)dao.findForList("wxmapper.getDriverTriplistPage",page);
     }
 
-    public Integer getCount(Map<String, Object> map) throws Exception{
-        return (Integer)dao.findForObject("wxmapper.getCount",map);
-    }
     /**
      * 根据流水号查找行程详情
      * @param serialNo
@@ -52,33 +41,34 @@ public class WXservice {
 
     /**
      * 插入行程信息(单条)
-     * @param openid
-     * @param tripData
+     * @param pd
      * @return
      */
-    public String insertTrip(String openid, String tripData) throws Exception {
+    public String insertTrip(PageData pd) throws Exception {
         String result="";
-        JSONObject json = JSON.parseObject(tripData);
         Map<String,Object> map = new HashMap<String,Object>();
-        if(json != null && !json.isEmpty()) {
-            map.put("LinkmanName",json.get("LinkmanName"));
-            map.put("LinkmanId",json.get("LinkmanId"));
-            map.put("Phone",json.get("Phone"));
-            map.put("StartCityId",json.get("StartCityId"));
-            map.put("StartStation",json.get("StartStation"));
-            map.put("EndCityId",json.get("EndCityId"));
-            map.put("Destination",json.get("Destination"));
-            map.put("Byway",json.get("Byway"));
-            map.put("CartBrandId",json.get("CartBrandId"));
-            map.put("CarModelId",json.get("CarModelId"));
-            map.put("CarNumber",json.get("CarNumber"));
-            map.put("SeatTotal",json.get("SeatTotal"));
-            map.put("StartTime",json.get("StartTime"));
-            map.put("Top",json.get("Top"));
-            map.put("Remark",json.get("Remark"));
-            map.put("SeatRemain",json.get("SeatRemain"));
+        if(!pd.isEmpty()) {
+            /*map.put("LinkmanName",pd.get("LinkmanName"));
+            map.put("LinkmanId",pd.get("LinkmanId"));
+            map.put("Phone",pd.get("Phone"));
+            map.put("StartCityId",pd.get("StartCityId"));
+            map.put("StartStation",pd.get("StartStation"));
+            map.put("EndCityId",pd.get("EndCityId"));
+            map.put("Destination",pd.get("Destination"));
+            map.put("Byway",pd.get("Byway"));
+            map.put("CartBrandId",pd.get("CartBrandId"));
+            map.put("CarModelId",pd.get("CarModelId"));
+            map.put("CarNumber",pd.get("CarNumber"));
+            map.put("SeatTotal",pd.get("SeatTotal"));
+            map.put("StartTime",pd.get("StartTime"));
+            map.put("Top",pd.get("Top"));
+            map.put("Remark",pd.get("Remark"));*/
 
-            dao.save("wxmapper.insertTrip",map);
+            if(pd.getString("userId") == null) {
+                pd.put("userId","");
+            }
+            pd.put("SerialNo", DateUtil.getDateRandomCode());
+            dao.save("wxmapper.insertTrip",pd);
             result = "1";
         }else {
             result = "3";

@@ -6,17 +6,20 @@
 <mapper namespace="wxmapper">
 
     <!--根据条件查询已发布的行程(司机) -->
-    <select id="getDriverTripListByCondition" parameterType="map" resultType="map">
+    <select id="getDriverTriplistPage" parameterType="page" resultType="map">
         select
             a.SerialNo,
             a.LinkmanName,
             a.Phone,
             a.StartStation,
+            a.StartCityId,
+            a.EndCityId,
             (select c.RegionName from ecs_dic_region c where a.StartCityId = c.RegionId) StartCity,
             (select c.RegionName from ecs_dic_region c where a.EndCityId = c.RegionId) EndCity,
+            (select c.DicCode from ecs_dic_system c where c.DicValue = a.TripType) tripName,
             a.Destination,
-            (select b.DicValue from ecs_dic_system b where a.CarModelId = b.DicId) CarModel,
-            (select b.DicValue from ecs_dic_system b where a.CartBrandId = b.DicId) CartBrand,
+            a.CartBrand,
+            a.TripType,
             a.CarNumber,
             a.SeatTotal,
             a.SeatRemain,
@@ -26,39 +29,19 @@
         from ecu_trip_driver a
         where
           a.IsEffective= '1'
-        <if test="startCity != null and startCity != '' ">
-              and a.StartCityId=#{startCity}
+        <!--<if test="pd.startCity != null and pd.startCity != '' ">
+              and a.StartCityId=#{pd.startCity}
         </if>
-        <if test="endCity != null and endCity != '' ">
-            and a.EndCityId=#{endCity}
+        <if test="pd.endCity != null and pd.endCity != '' ">
+            and a.EndCityId=#{pd.endCity}
         </if>
-        <if test="startStation != null and startStation != '' ">
-            and a.StartStation=#{startStation}
+        <if test="pd.startStation != null and pd.startStation != '' ">
+            and a.StartStation=#{pd.startStation}
         </if>
-        <if test="startDate != null and startDate != '' ">
-            and date_format(StartTime,'%Y-%m-%d')=#{startDate}
-        </if>
+        <if test="pd.startDate != null and pd.startDate != '' ">
+            and date_format(a.StartTime,'%Y-%m-%d')=#{pd.startDate}
+        </if>-->
         order by a.PublishTime desc
-        limit ${offset},${limit}
-    </select>
-
-    <select id="getCount" parameterType="map" resultType="java.lang.Integer">
-        select count(1)
-        from ecu_trip_driver a
-        where
-        a.IsEffective= '1'
-        <if test="startCity != null and startCity != '' ">
-            and a.StartCityId=#{startCity}
-        </if>
-        <if test="endCity != null and endCity != '' ">
-            and a.EndCityId=#{endCity}
-        </if>
-        <if test="startStation != null and startStation != '' ">
-            and a.StartStation=#{startStation}
-        </if>
-        <if test="startDate != null and startDate != '' ">
-            and date_format(StartTime,'%Y-%m-%d')=#{startDate}
-        </if>
     </select>
 
     <!--根据条件查询已发布的行程(乘客) -->
@@ -76,20 +59,20 @@
         from ecu_trip_customer a
         where
         a.IsEffective= '1'
-        <if test="startCity != null and startCity != '' ">
-            and a.StartCityId=#{startCity}
+        <if test="pd.startCity != null and pd.startCity != '' ">
+            and a.StartCityId=#{pd.startCity}
         </if>
-        <if test="endCity != null and endCity != '' ">
-            and a.EndCityId=#{endCity}
+        <if test="pd.endCity != null and pd.endCity != '' ">
+            and a.EndCityId=#{pd.endCity}
         </if>
-        <if test="startStation != null and startStation != '' ">
-            and a.StartStation=#{startStation}
+        <if test="pd.startStation != null and pd.startStation != '' ">
+            and a.StartStation=#{pd.startStation}
         </if>
-        <if test="startDate != null and startDate != '' ">
-            and date_format(StartTime,'%Y-%m-%d')=#{startDate}
+        <if test="pd.startDate != null and pd.startDate != '' ">
+            and date_format(StartTime,'%Y-%m-%d')=#{pd.startDate}
         </if>
         order by a.PublishTime desc
-        limit  ${start},${pageSize}
+        limit  #{pd.currentPage},#{pd.showCount}
     </select>
 
     <!--根据流水号查询行程详情-->
@@ -123,6 +106,7 @@
         insert into
         ecu_trip_driver
             (
+            SerialNo,
             LinkmanName,
             LinkmanId,
             Phone,
@@ -131,36 +115,33 @@
             EndCityId,
             Destination,
             Byway,
-            CartBrandId,
-            CarModelId,
-            CarNumber,
+            CartBrand,
             SeatTotal,
             Price,
             StartTime,
             Remark,
-            Top,
             SeatRemain,
+            tripType,
             PublishTime
             )
             values
             (
+            #{SerialNo},
             #{LinkmanName},
-            #{LinkmanId},
+            #{userId},
             #{Phone},
             #{StartCityId},
             #{StartStation},
             #{EndCityId},
             #{Destination},
             #{Byway},
-            #{CartBrandId},
-            #{CarModelId},
-            #{CarNumber},
+            #{CartBrand},
             #{SeatTotal},
             #{Price},
             #{StartTime},
             #{Remark},
-            #{Top},
-            #{SeatRemain},
+            #{SeatTotal},
+            #{tripType},
             now()
             )
     </insert>

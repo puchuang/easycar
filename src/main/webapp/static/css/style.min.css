@@ -640,7 +640,8 @@ img.circle-border{border:6px solid #FFF;border-radius:50%}
 .breadcrumb{background-color:#fff;padding:0;margin-bottom:0}
 .breadcrumb>.active,.breadcrumb>li a{color:inherit}
 code{background-color:#F9F2F4;border-radius:4px;color:#ca4440;font-size:90%;padding:2px 4px;white-space:nowrap}
-.ibox{clear:both;margin-bottom:25px;margin-top:0;padding:0}
+/*.ibox{clear:both;margin-bottom:25px;margin-top:0;padding:0}*/
+.ibox{clear:both;margin-top:0;padding:0}
 .ibox.collapsed .ibox-content{display:none}
 .ibox.collapsed .fa.fa-chevron-up:before{content:"\f078"}
 .ibox.collapsed .fa.fa-chevron-down:before{content:"\f077"}

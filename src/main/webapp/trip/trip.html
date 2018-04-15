@@ -10,6 +10,10 @@
     <link href="../static/css/plugins/bootstrap-table/bootstrap-table.min.css" rel="stylesheet">
     <link href="../static/css/animate.min.css" rel="stylesheet">
     <link href="../static/css/style.min.css?v=4.1.0" rel="stylesheet">
+
+    <script !src="">
+
+    </script>
 </head>
 <body class="gray-bg">
     <div class="wrapper wrapper-content animated fadeInRight">
@@ -42,11 +46,11 @@
                     <div class="col-sm-12">
                         <!-- Example Events -->
                         <div class="example-wrap">
-                            <h4 class="example-title">点击事件测试</h4>
+                            <!--<h4 class="example-title">点击事件测试</h4>-->
                             <div class="example">
-                                <div class="alert alert-success" id="examplebtTableEventsResult" role="alert">
-                                    事件结果
-                                </div>
+                                <!--<div class="alert alert-success" id="examplebtTableEventsResult" role="alert">-->
+                                    <!--事件结果-->
+                                <!--</div>-->
                                 <div class="btn-group hidden-xs" id="tableListToolbar" role="group">
                                     <button id="btn_add" type="button" class="btn btn-outline btn-default">
                                         <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>
@@ -58,19 +62,22 @@
                                         <i class="glyphicon glyphicon-trash" aria-hidden="true"></i>
                                     </button>
                                 </div>
-                                <table id="tableList" data-height="530" data-mobile-responsive="true">
+                                <table id="tableList"  data-height="730" data-mobile-responsive="true">
                                     <thead>
                                         <tr>
                                             <th data-field="state" data-checkbox="true"></th>
-                                            <th data-field="SerialNo">行程流水号</th>
+                                            <!--<th data-field="SerialNo" style="display: none">行程流水号</th>-->
                                             <th data-field="LinkmanName">用户昵称</th>
+                                            <th data-field="tripName">行程类型</th>
                                             <th data-field="Price">价格</th>
                                             <th data-field="Phone">手机号</th>
+                                            <th data-field="StartCityId" data-visible="false">出发城市ID</th>
                                             <th data-field="StartCity">出发城市</th>
                                             <th data-field="StartStation">出发站</th>
                                             <th data-field="EndCity">终点城市</th>
+                                            <th data-field="EndCityId" data-visible="false">终点城市ID</th>
                                             <th data-field="Destination">终点站</th>
-                                            <th data-field="CarNumber">车牌号</th>
+                                            <th data-field="CartBrand">车型</th>
                                             <th data-field="StartTime">出发时间</th>
                                             <th data-field="SeatRemain">剩余座位</th>
                                             <th data-field="Remark">描述</th>
@@ -87,12 +94,13 @@
         <!-- End Panel Other -->
     </div>
     <script src="../static/js/jquery.min.js?v=2.1.4"></script>
+    <script src="../static/js/common.js"></script>
     <script src="../static/js/bootstrap.min.js?v=3.3.6"></script>
     <script src="../static/js/content.min.js?v=1.0.0"></script>
     <script src="../static/js/plugins/bootstrap-table/bootstrap-table.min.js"></script>
     <script src="../static/js/plugins/bootstrap-table/bootstrap-table-mobile.min.js"></script>
     <script src="../static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
     <script src="../static/js/plugins/layer/layer.min.js"></script>
-    <script src="test.js"></script>
+    <script src="trip.js"></script>
 </body>
 </html>
