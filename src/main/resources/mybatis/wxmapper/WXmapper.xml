@@ -29,18 +29,18 @@
         from ecu_trip_driver a
         where
           a.IsEffective= '1'
-        <!--<if test="pd.startCity != null and pd.startCity != '' ">
+        <if test="pd.startCity != null and pd.startCity != '' ">
               and a.StartCityId=#{pd.startCity}
         </if>
         <if test="pd.endCity != null and pd.endCity != '' ">
             and a.EndCityId=#{pd.endCity}
         </if>
-        <if test="pd.startStation != null and pd.startStation != '' ">
-            and a.StartStation=#{pd.startStation}
-        </if>
-        <if test="pd.startDate != null and pd.startDate != '' ">
-            and date_format(a.StartTime,'%Y-%m-%d')=#{pd.startDate}
-        </if>-->
+        <!--<if test="pd.startStation != null and pd.startStation != '' ">-->
+            <!--and a.StartStation=#{pd.startStation}-->
+        <!--</if>-->
+        <!--<if test="pd.startDate != null and pd.startDate != '' ">-->
+            <!--and date_format(a.StartTime,'%Y-%m-%d')=#{pd.startDate}-->
+        <!--</if>-->
         order by a.PublishTime desc
     </select>
 

@@ -32,12 +32,19 @@ public class WXLoginController extends BaseController{
 //    public Map<String,Object> getTripList(String pageIndx, String triptype, String startCity, String endCity, String startDate) {
     public Map<String,Object> getTripList(Page page) {
         Map<String,Object> returnMap = new HashMap<String,Object>();
-        Map<String,Object> map = new HashMap<String, Object>();
         List<Map<String,String>> list = new ArrayList<Map<String, String>>();
         String outType = "fail";
 
-//        PageData pageData = this.getPageData();
+
+        PageData pageData = this.getPageData();
+        if(!pageData.containsKey("startCity")) {
+            pageData.put("startCity","");
+        }if(!pageData.containsKey("endCity")) {
+            pageData.put("endCity","");
+        }
+        page.setPd(pageData);
         try {
+
             list = wXservice.getTripListByCondition(page);
             outType = "success";
             logger.info("查询行程列表成功");
