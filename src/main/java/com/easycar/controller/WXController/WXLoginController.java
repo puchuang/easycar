@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.easycar.controller.BaseController;
 import com.easycar.entity.Page;
 import com.easycar.service.WXService.WXservice;
+import com.easycar.service.common.RegionService;
 import com.easycar.util.PageData;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
@@ -20,6 +21,7 @@ public class WXLoginController extends BaseController{
 
     @Resource(name = "wxService")
     private WXservice wXservice;
+
 
     /**
      * 根据条件获取行程列表
@@ -55,7 +57,8 @@ public class WXLoginController extends BaseController{
         }
 
 //        returnMap.put("outType",outType);
-//        returnMap.put("total",count);
+        int total = page.getTotalResult();
+        returnMap.put("total",total);
         returnMap.put("rows",list);
         return returnMap;
     }

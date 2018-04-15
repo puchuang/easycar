@@ -67,10 +67,10 @@ public class Page
         {
             currentPage = 1;
         }
-        if (currentPage > getTotalPage())
-        {
-            currentPage = getTotalPage();
-        }
+//        if (currentPage > getTotalPage())
+//        {
+//            currentPage = getTotalPage();
+//        }
         return currentPage;
     }
 

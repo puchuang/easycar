@@ -38,4 +38,12 @@
         from ecs_dic_region
         where regionType=#{codeSelect}
     </select>
+
+    <select id="getRegionNameById" parameterType="string" resultType="string">
+        select
+        RegionName
+        from
+        ecs_dic_region
+        where RegionId = #{id}
+    </select>
 </mapper>

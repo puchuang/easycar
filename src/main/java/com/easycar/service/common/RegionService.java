@@ -15,4 +15,9 @@ public class RegionService {
     public List<Map<String,Object>> getRegionsByType(String codeSelect) throws Exception{
         return (List<Map<String,Object>>)dao.findForList("commonMapper.getRegionsByType",codeSelect);
     }
+
+    public String getRegionNameById(String id) throws Exception{
+        return (String) dao.findForObject("commonMapper.getRegionNameById",id);
+
+    }
 }

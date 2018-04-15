@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.easycar.dao.DaoSupport;
 import com.easycar.entity.Page;
+import com.easycar.service.common.RegionService;
 import com.easycar.util.DateUtil;
 import com.easycar.util.HttpRequestUtil;
 import com.easycar.util.Logger;
@@ -21,6 +22,9 @@ import java.util.Map;
 public class WXservice {
     @Resource(name = "daoSupport")
     private DaoSupport dao;
+    
+    @Resource(name = "regionService")
+    private RegionService regionService;
 
     private Logger logger;
 
@@ -48,22 +52,12 @@ public class WXservice {
         String result="";
         Map<String,Object> map = new HashMap<String,Object>();
         if(!pd.isEmpty()) {
-            /*map.put("LinkmanName",pd.get("LinkmanName"));
-            map.put("LinkmanId",pd.get("LinkmanId"));
-            map.put("Phone",pd.get("Phone"));
-            map.put("StartCityId",pd.get("StartCityId"));
-            map.put("StartStation",pd.get("StartStation"));
-            map.put("EndCityId",pd.get("EndCityId"));
-            map.put("Destination",pd.get("Destination"));
-            map.put("Byway",pd.get("Byway"));
-            map.put("CartBrandId",pd.get("CartBrandId"));
-            map.put("CarModelId",pd.get("CarModelId"));
-            map.put("CarNumber",pd.get("CarNumber"));
-            map.put("SeatTotal",pd.get("SeatTotal"));
-            map.put("StartTime",pd.get("StartTime"));
-            map.put("Top",pd.get("Top"));
-            map.put("Remark",pd.get("Remark"));*/
 
+            //根据区域id查找区域名称
+            String StartCityName = regionService.getRegionNameById(pd.getString("StartCityId"));
+            String EndCityName = regionService.getRegionNameById(pd.getString("EndCityId"));
+            pd.put("StartCityName",StartCityName);
+            pd.put("EndCityName",EndCityName);
             if(pd.getString("userId") == null) {
                 pd.put("userId","");
             }
