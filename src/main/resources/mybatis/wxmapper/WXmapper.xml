@@ -30,10 +30,10 @@
         where
           a.IsEffective= '1'
         <if test="pd.startCity != null and pd.startCity != '' ">
-              and a.StartCityId=#{pd.startCity}
+            and a.StartCityName=#{pd.startCity}
         </if>
         <if test="pd.endCity != null and pd.endCity != '' ">
-            and a.EndCityId=#{pd.endCity}
+            and a.EndCityName=#{pd.endCity}
         </if>
         <!--<if test="pd.startStation != null and pd.startStation != '' ">-->
             <!--and a.StartStation=#{pd.startStation}-->
