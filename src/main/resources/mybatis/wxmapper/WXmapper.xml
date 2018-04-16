@@ -30,10 +30,10 @@
         where
           a.IsEffective= '1'
         <if test="pd.startCity != null and pd.startCity != '' ">
-            and a.StartCityName=#{pd.startCity}
+            and a.StartCityName like  CONCAT('%',#{pd.startCity},'%')
         </if>
         <if test="pd.endCity != null and pd.endCity != '' ">
-            and a.EndCityName=#{pd.endCity}
+            and a.EndCityName like  CONCAT('%',#{pd.endCity},'%')
         </if>
         <!--<if test="pd.startStation != null and pd.startStation != '' ">-->
             <!--and a.StartStation=#{pd.startStation}-->
