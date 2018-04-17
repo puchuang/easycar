@@ -41,8 +41,15 @@ public class WXLoginController extends BaseController{
         PageData pageData = this.getPageData();
         if(!pageData.containsKey("startCity")) {
             pageData.put("startCity","");
-        }if(!pageData.containsKey("endCity")) {
+        }
+        if(!pageData.containsKey("endCity")) {
             pageData.put("endCity","");
+        }
+        if(!pageData.containsKey("tripType")) {
+            pageData.put("tripType","");
+        }
+        if(!pageData.containsKey("curTime")) {
+            pageData.put("curTime","");
         }
         page.setPd(pageData);
         try {
