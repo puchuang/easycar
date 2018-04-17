@@ -38,7 +38,7 @@
         <if test="pd.tripType != null and pd.tripType != '' ">
             and a.TripType = #{pd.tripType}
         </if>
-        <if test="pd.curDate != null and pd.curDate != '' ">
+        <if test="pd.curTime != null and pd.curTime != '' ">
             and date_format(a.StartTime,'%Y-%m-%d %H:%i:%s') >= #{pd.curTime}
         </if>
         <!--<if test="pd.startStation != null and pd.startStation != '' ">-->
