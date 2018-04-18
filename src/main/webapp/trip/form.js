@@ -1,4 +1,4 @@
-$(function () {
+﻿$(function () {
     //初始化出发与目的城市
     $.ajax({
         type: 'POST',
@@ -45,6 +45,16 @@ function submitForm() {
 //点击按钮时，改变形成类型
 function changeType(tripType) {
     $("#tripType").val(tripType);
+	if (tripType == 2)
+            {
+                $("#btnCar").removeClass("btn-default").addClass('btn-primary');
+                $("#btnCus").removeClass("btn-primary").addClass('btn-default');
+            }
+            else if (tripType == 1)
+            {
+                $("#btnCar").removeClass("btn-primary").addClass('btn-default');
+                $("#btnCus").removeClass("btn-default").addClass('btn-primary');
+            }
     // alert($("#tripType").val());
 }
 

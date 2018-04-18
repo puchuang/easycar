@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title></title>
     <link href="../static/css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
     <link href="../static/css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
@@ -11,36 +11,37 @@
 <body>
     <div class="row">
         <div class="col-sm-12">
-            <div class="ibox float-e-margins">                
+            <div class="ibox float-e-margins">
                 <div class="ibox-content">
                     <ul class="nav nav-tabs">
                         <li class="active"><a href="#">行程信息</a></li>
                         <!--<li><a href="#">扩展信息</a></li>-->
                     </ul>
                     <form class="form-horizontal m-t" id="signupForm">
-                        <input type="hidden" id="tripType" name="tripType" value="1"/>
+                        <input type="hidden" id="tripType" name="tripType" value="2" />
                         <div class="form-group">
                             <label class="col-sm-2 control-label">拼车类型：</label>
                             <div class="col-sm-4">
-                                <button class="btn btn-primary " type="button" onclick="changeType('1')"><i class="fa fa-check"></i>&nbsp;车找人</button>
-                                <button class="btn btn-primary " type="button" onclick="changeType('2')"><i class="fa fa-check"></i>&nbsp;人找车</button>
+                                <button id="btnCar" class="btn btn-primary " type="button" onclick="changeType('2')"><i class="fa fa-check"></i>&nbsp;车找人</button>
+                                <button id="btnCus" class="btn btn-default " type="button" onclick="changeType('1')"><i class="fa fa-check"></i>&nbsp;人找车</button>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-sm-2 control-label">手机号：</label>
                             <div class="col-sm-4">
-                                <input id="Phone" name="Phone" datatype="m" class="form-control" required lay-verify="required" placeholder="请输入手机号" type="text">
+                                <input id="Phone" name="Phone" datatype="*" class="form-control" required lay-verify="required" placeholder="请输入手机号" type="text">
                                 <span class="help-block m-b-none Validform_checktip"></span>
                             </div>
-                            <label class="col-sm-2 control-label">联系人：</label>
+                            <label class="col-sm-2 control-label">出发时间：</label>
                             <div class="col-sm-4">
-                                <input id="LinkmanName" name="LinkmanName" class="form-control" placeholder="请输入联系人姓名" type="text" aria-required="true" aria-invalid="false">
+                                <input id="StartTime" name="StartTime" onclick="laydate({ istime: true, format: 'YYYY-MM-DD hh:mm:ss', min: laydate.now() })" class="form-control" datatype="*" type="text">
+                                <span class="help-block m-b-none Validform_checktip"><i class="fa fa-info-circle"></i> 请选择时间</span>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-sm-2 control-label">价格：</label>
                             <div class="col-sm-4">
-                                <input id="Price" name="Price" datatype="n" class="form-control" placeholder="请输入价格" type="text">
+                                <input id="Price" name="Price" class="form-control" placeholder="请输入价格" type="text">
                                 <span class="help-block m-b-none Validform_checktip"></span>
                             </div>
                             <label class="col-sm-2 control-label">座位：</label>
@@ -52,16 +53,18 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label">出发城市：</label>
                             <div class="col-sm-4">
-                                <select  id="StartCityId" name="StartCityId" class="form-control" datatype="s" >
+                                <select id="StartCityId" name="StartCityId" class="form-control" datatype="s">
                                     <option>--请选择出发城市--</option>
                                 </select>
                                 <span class="help-block m-b-none Validform_checktip"></span>
                             </div>
                             <label class="col-sm-2 control-label">出发地点：</label>
                             <div class="col-sm-4">
-                                <input id="StartStation" name="StartStation" class="form-control" type="text"  aria-required="true" aria-invalid="true">
+                                <input id="StartStation" name="StartStation" class="form-control" type="text" aria-required="true" aria-invalid="true">
                                 <span class="help-block m-b-none Validform_checktip"></span>
                             </div>
+                        </div>
+                        <div class="form-group">
                             <label class="col-sm-2 control-label">目的城市：</label>
                             <div class="col-sm-4">
                                 <select id="EndCityId" name="EndCityId" class="form-control" datatype="s">
@@ -71,7 +74,7 @@
                             </div>
                             <label class="col-sm-2 control-label">目的地点：</label>
                             <div class="col-sm-4">
-                                <input id="Destination" name="Destination" class="form-control"  type="text">
+                                <input id="Destination" name="Destination" class="form-control" type="text">
                                 <span class="help-block m-b-none Validform_checktip"></span>
                             </div>
                         </div>
@@ -87,10 +90,9 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label">出发时间：</label>
+                            <label class="col-sm-2 control-label">联系人：</label>
                             <div class="col-sm-4">
-                                <input id="StartTime" name="StartTime" onclick="laydate({ istime: true, format: 'YYYY-MM-DD hh:mm:ss', min: laydate.now() })" class="form-control" datatype="*" type="text">
-                                <span class="help-block m-b-none"><i class="fa fa-info-circle"></i> 请选择时间</span>
+                                <input id="LinkmanName" name="LinkmanName" class="form-control" placeholder="请输入联系人姓名" type="text" aria-required="true" aria-invalid="false">
                             </div>
                             <label class="col-sm-2 control-label">备注：</label>
                             <div class="col-sm-4">
@@ -109,47 +111,47 @@
     <script src="../static/js/plugins/layer/laydate/laydate.js"></script>
 
     <script src="form.js"></script>
-   <!-- <script type="text/javascript">
-        var keyValue;// = $.request("keyValue");//在公用写获取参数函数，做为修改页面时使用。未写！
-        $(function () {
-            initControl();
-            if (!!keyValue) {
-                $.ajax({
-                    url: "",
-                    data: { keyValue: keyValue },
-                    dataType: "json",
-                    async: false,
-                    success: function (data) {
-                        
-                    }
-                });
-            }
-        });
-        function initControl() {
-            //页面加载函数
-            
-        }
-        function submitForm() {
-            var validForm = $("#signupForm").Validform({
-                tiptype: 4,
-                callback: function (data) {
-                    if (data.statusText == "OK") {
-                        parent.layer.msg('添加成功');
+    <!-- <script type="text/javascript">
+         var keyValue;// = $.request("keyValue");//在公用写获取参数函数，做为修改页面时使用。未写！
+         $(function () {
+             initControl();
+             if (!!keyValue) {
+                 $.ajax({
+                     url: "",
+                     data: { keyValue: keyValue },
+                     dataType: "json",
+                     async: false,
+                     success: function (data) {
 
-                        //提交成功刷新列表页面
-                        parent.$("#tableList").bootstrapTable('refresh');
-                        //关闭增加页面
-                        parent.layer.closeAll();
-                    }
-                    else
-                    {
-                        //失败弹出提示错误
-                        alert('添加失败');
-                    }
-                }
-            });
-            validForm.ajaxPost(false, false, 'trip.aspx');                       
-        }
-    </script>-->
+                     }
+                 });
+             }
+         });
+         function initControl() {
+             //页面加载函数
+
+         }
+         function submitForm() {
+             var validForm = $("#signupForm").Validform({
+                 tiptype: 4,
+                 callback: function (data) {
+                     if (data.statusText == "OK") {
+                         parent.layer.msg('添加成功');
+
+                         //提交成功刷新列表页面
+                         parent.$("#tableList").bootstrapTable('refresh');
+                         //关闭增加页面
+                         parent.layer.closeAll();
+                     }
+                     else
+                     {
+                         //失败弹出提示错误
+                         alert('添加失败');
+                     }
+                 }
+             });
+             validForm.ajaxPost(false, false, 'trip.aspx');
+         }
+     </script>-->
 </body>
 </html>
