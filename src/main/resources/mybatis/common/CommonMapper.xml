@@ -46,4 +46,16 @@
         ecs_dic_region
         where RegionId = #{id}
     </select>
+
+    <!--更新单个状态的通用方法-->
+    <update id="updateStatus" parameterType="map" statementType="STATEMENT">
+        update ${tableName}
+        set ${statusName}=${statusResult}
+        where ${queryColumn}=${queryLimit}
+    </update>
+
+    <delete id="deleteByCondition" parameterType="map" statementType="STATEMENT">
+        delete from ${tableName}
+        where ${queryColumn}=${queryLimit}
+    </delete>
 </mapper>

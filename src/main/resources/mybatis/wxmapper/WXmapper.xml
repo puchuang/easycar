@@ -162,7 +162,6 @@
         Nickname nickName,
         Sex gender,
         Headimgurl avatarUrl,
-        Headimgurl
         CityId city,
         ProvinceId province,
         CountryId country
