@@ -8,6 +8,7 @@ public class UuidUtil
     public static String get32UUID()
     {
         String uuid = UUID.randomUUID().toString().trim().replaceAll("-", "");
+        System.out.println(uuid);
         return uuid;
     }
 
@@ -18,9 +19,9 @@ public class UuidUtil
 
     public static void main(String[] args)
     {
-        //System.out.println(get32UUID());
+        System.out.println(get32UUID());
         //System.out.println(getUuidOfStr("asd"));
-        System.out.println(UUID.fromString("123"));
+//        System.out.println(UUID.fromString("123"));
     }
 }
 

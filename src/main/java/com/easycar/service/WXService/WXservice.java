@@ -6,13 +6,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.easycar.dao.DaoSupport;
 import com.easycar.entity.Page;
 import com.easycar.service.common.RegionService;
-import com.easycar.util.DateUtil;
-import com.easycar.util.HttpRequestUtil;
-import com.easycar.util.Logger;
-import com.easycar.util.PageData;
+import com.easycar.util.*;
+import org.springframework.http.HttpRequest;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -72,52 +72,71 @@ public class WXservice {
 
     /**
      * 本系统登陆方法（保存微信返回的openid）
-     * @param reqJson
+     * @param pd
      * @return
      */
-    public Map<String,Object> systemLogin(String reqJson) {
+    public Map<String,Object> systemLogin(PageData pd) {
         Map<String,Object> returnMap = new HashMap<String, Object>();//返回数据
-        Map<String,String> userMap = new HashMap<String, String>();//保存微信返回的用户信息
+        Map<String,Object> userMap = new HashMap<String, Object>();//保存微信返回的用户信息
         String result="fail";
         String msg="";
-        if(StringUtils.isEmpty(reqJson)) {
-            msg="reqJson为空，请检查后重试";
+        String userId = "";
+        if(pd.isEmpty()) {
+            msg="请求数据为空，请检查后重试";
         }else{
-            JSONObject json = JSON.parseObject(reqJson);
-            String code = json.getString("code");
-            String userInfo = json.getString("userInfo");
-            if(!StringUtils.isEmpty(userInfo)) {
-                JSONObject userJson = JSON.parseObject(userInfo);
-                userMap.put("nickName",userJson.get("nickName").toString());
-                userMap.put("gender",userJson.get("gender").toString());
-                userMap.put("avatarUrl",userJson.get("avatarUrl").toString());
-                userMap.put("city",userJson.get("city").toString());
-                userMap.put("province",userJson.get("province").toString());
-                userMap.put("country",userJson.get("country").toString());
-            }
-            if(StringUtils.isEmpty(reqJson)) {
-                msg="code为空，请检查后重试";
-            }else{
-                Map<String, Object> resultMap = loginByCode(code);
-                String resultValue=resultMap.get("ret").toString();
-                if("success".equals(resultValue)) {//查询成功，处理openid和session_key
-                    String openid=resultMap.get("openid").toString();
-                    String session_key=resultMap.get("session_key").toString();
-                    try {
-                        Map<String, Object> localuserMap = findUserByOpenid(openid);//查询用户是否已存在
-                        if(localuserMap == null || "".equals(localuserMap.get("userId"))) {//用户不存在
+            String code = pd.getString("code");
+            Map<String,Object> loginMap = loginByCode(code);
+            if(loginMap.containsKey("ret") && "success".equals(loginMap.get("ret")))  {//说明与微信通信成功，并取得了openid和sessionKey
+                String openid = loginMap.get("openid").toString();
+                String session_key = loginMap.get("session_key").toString();
+
+                //根据openid查找用户，存在则从数据看取出user信息，不存在则插入数据
+                try{
+                    Map<String, Object> localuserMap = findUserByOpenid(openid);//根据openid查询用户是否已存在
+                    if(localuserMap == null || "".equals(localuserMap.get("userId"))) {//用户不存在
+                        //调用工具类解析微信加密数据，得到明文信息
+                        String iv = pd.getString("iv");
+                        String encryptedData = pd.getString("encryptedData");
+
+                        JSONObject userInfo = WeiXinUtil.getUserInfo(encryptedData, session_key, iv);
+                        if(userInfo != null && !userInfo.isEmpty()) {//判断返回数据不为空，则微信解析成功，查看用户是否存在，存在则更新，不存在则保存
+                            userMap.put("openId",userInfo.get("openId"));//encryptedData这种加密信息中有openid等敏感信息
+                            userMap.put("nickName",userInfo.get("nickName"));
+                            userMap.put("gender",userInfo.get("gender"));
+                            userMap.put("avatarUrl",userInfo.get("avatarUrl"));
+                            userMap.put("city",userInfo.get("city"));
+                            userMap.put("province",userInfo.get("province"));
+                            userMap.put("country",userInfo.get("country"));
                             //执行插入操作
+                            userId =  UuidUtil.get32UUID();
+                            userMap.put("userId",userId);
+                            dao.save("wxmapper.saveUserInfo",userMap);
 
-                        }else{
-                            //执行更新操作(每次执行登录操作  session_key一定需要更新)
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                            userMap.remove("openId");//给前端发送信息时不能携带openId
+                            returnMap.put("userInfo",userMap);
+                            result = "success";
+                            msg = "保存微信用户信息成功";
+//                            logger.info("保存微信用户信息成功，用户昵称："+userMap.get("nickname"));
+                    }else{
+                        msg = "解析微信加密数据失败";
+                        result = "fail";
                     }
+                }else{
+                        result = "success";
+                        msg = "登录成功";
+                        returnMap.put("userInfo",localuserMap);
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
+                returnMap.put("sk",session_key);
+            }else{
+                msg = "访问微信失败";
+                result = "fail";
             }
-
         }
+        returnMap.put("result",result);
+        returnMap.put("msg",msg);
         return returnMap;
     }
 
@@ -138,9 +157,9 @@ public class WXservice {
         Map<String,Object> map = new HashMap<String,Object>();
 
         //向微信发起请求，获取openid
-        logger.info("向微信发起请求，地址及参数为："+url+"?"+param);
+//        logger.info("向微信发起请求，地址及参数为："+url+"?"+param);
         String result = HttpRequestUtil.sendGet(url, param);
-        logger.info("微信返回结果："+result);
+//        logger.info("微信返回结果："+result);
         /*  微信返回示例
              //正常返回的JSON数据包
             {
@@ -160,7 +179,7 @@ public class WXservice {
                 "errmsg": "invalid code"
             }
          */
-        if(result != null && "".equals(result)) {//说明有返回
+        if(result != null && !"".equals(result)) {//说明有返回
             JSONObject jsonObject = JSON.parseObject(result);
             if(jsonObject.containsKey("errcode")) {//说明有错误信息
                 ret="fail";
@@ -170,10 +189,12 @@ public class WXservice {
                 msg="成功返回openid和session_key";
                 map.put("openid",jsonObject.get("openid"));
                 map.put("session_key",jsonObject.get("session_key"));
+//                map.put("unionid",jsonObject.get("unionid"));
             }else{
                 ret="fail";
                 msg="未知错误";
             }
+
             map.put("ret",ret);
             map.put("msg",msg);
         }

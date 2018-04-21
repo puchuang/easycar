@@ -159,10 +159,46 @@
     <select id="findUserByOpenid" parameterType="string" resultType="map">
         select
         userId,
-        Nickname,
-        Headimgurl,
-        Phone
+        Nickname nickName,
+        Sex gender,
+        Headimgurl avatarUrl,
+        Headimgurl
+        CityId city,
+        ProvinceId province,
+        CountryId country
         from ecu_user
         where Openid=#{openid}
     </select>
+
+    <!--插入用户信息-->
+    <insert id="saveUserInfo" parameterType="map">
+        insert into ecu_user
+        (
+          userId,
+          Openid,
+          Nickname,
+          Sex,
+          Headimgurl,
+          CityId,
+          ProvinceId,
+          CountryId,
+          RegistTime
+        )values(
+          #{userId},
+          #{openId},
+          #{nickName},
+          #{gender},
+          #{avatarUrl},
+          #{city},
+          #{province},
+          #{country},
+          now()
+        )
+    </insert>
+    <!--更新微信用户信息-->
+    <update id="updateUserInfo" parameterType="map">
+        update ecu_user
+        set Nickname=#{nickname},Sex=#{gender},Headimgurl=#{avatarUrl},CityId=#{city},ProvinceId=#{province}
+        where Openid=#{openid}
+    </update>
 </mapper>

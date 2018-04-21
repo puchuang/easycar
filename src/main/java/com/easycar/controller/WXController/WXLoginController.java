@@ -137,10 +137,16 @@ public class WXLoginController extends BaseController{
 
     @RequestMapping("/login")
     @ResponseBody
-    public Map<String,Object> login(String reqJson) {
-        Map<String,Object> map = new HashMap<String,Object>();
+    public Map<String,Object> login(HttpServletRequest request) {
+        request.getSession().getId();
 
-        Map<String,Object> loginMap = wXservice.systemLogin(reqJson);
-        return  map;
+        PageData pageData = this.getPageData();
+
+        Map<String,Object> loginMap = wXservice.systemLogin(pageData);
+        if(loginMap != null && loginMap.containsKey("result")) {
+            return  loginMap;
+        }else{
+            return null;
+        }
     }
 }
