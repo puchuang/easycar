@@ -51,7 +51,7 @@
     <update id="updateStatus" parameterType="map" statementType="STATEMENT">
         update ${tableName}
         set ${statusName}=${statusResult}
-        where ${queryColumn}=${queryLimit}
+        where ${queryColumn} in ${queryLimit}
     </update>
 
     <delete id="deleteByCondition" parameterType="map" statementType="STATEMENT">

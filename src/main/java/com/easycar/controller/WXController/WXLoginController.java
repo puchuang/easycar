@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.easycar.controller.BaseController;
 import com.easycar.entity.Page;
 import com.easycar.service.WXService.WXservice;
+import com.easycar.service.common.CommonService;
 import com.easycar.service.common.RegionService;
 import com.easycar.util.PageData;
 import org.springframework.stereotype.Controller;
@@ -22,6 +23,8 @@ public class WXLoginController extends BaseController{
     @Resource(name = "wxService")
     private WXservice wXservice;
 
+    @Resource(name = "commonService")
+    private CommonService commonService;
 
     /**
      * 根据条件获取行程列表
@@ -135,6 +138,11 @@ public class WXLoginController extends BaseController{
         return returnMap;
     }
 
+    /**
+     * 登陆入口（小程序）
+     * @param request
+     * @return
+     */
     @RequestMapping("/login")
     @ResponseBody
     public Map<String,Object> login(HttpServletRequest request) {
@@ -149,4 +157,32 @@ public class WXLoginController extends BaseController{
             return null;
         }
     }
+
+    /**
+     * 删除行程的方法，逻辑删除，置为失效即可
+     * @return
+     */
+    public Map<String,Object> removeTrip() {
+        PageData pageData = this.getPageData();//得到页面传过来的数据
+        String result = "fail";
+        String msg = "";
+
+        List<String> listSerial = new ArrayList<String>();
+        String SerialNo = pageData.getString("SerialNo");
+        listSerial.add(SerialNo);
+        Map<String,Object> map = new HashMap<String, Object>();
+        boolean b = commonService.updateStatus("ecu_trip_driver", "IsEffective", "2", "SerialNo", listSerial);
+
+        if(b) {
+            result = "success";
+            msg = "删除行程成功";
+        }else{
+            result = "fail";
+            msg = "删除失败";
+        }
+        map.put("result",result);
+        map.put("msg",msg);
+        return map;
+    }
+
 }

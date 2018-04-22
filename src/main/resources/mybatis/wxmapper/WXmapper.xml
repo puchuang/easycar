@@ -89,7 +89,6 @@
             a.Phone,
             a.StartStation,
             a.StartCityName,
-            a.StartCityName,
             a.EndCityName,
             a.Destination,
             (select b.DicValue from ecs_dic_system b where a.CartBrandId = b.DicId) CartBrand,
@@ -136,7 +135,7 @@
             (
             #{SerialNo},
             #{LinkmanName},
-            #{userId},
+            #{UserId},
             #{Phone},
             #{StartCityId},
             #{StartStation},
@@ -151,7 +150,7 @@
             #{StartTime},
             #{Remark},
             #{SeatTotal},
-            #{tripType},
+            #{TripType},
             now()
             )
     </insert>

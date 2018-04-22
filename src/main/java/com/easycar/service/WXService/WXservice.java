@@ -52,17 +52,38 @@ public class WXservice {
         String result="";
         Map<String,Object> map = new HashMap<String,Object>();
         if(!pd.isEmpty()) {
+            String StartCityName = "";
+            String EndCityName = "";
+            //根据区域id查找区域名称(小程序端暂时不适用cityid，所以需要判断并给出默认值)
+            if(pd.containsKey("StartCityId") && !"".equals(pd.getString("StartCityId"))) {
+                StartCityName = regionService.getRegionNameById(pd.getString("StartCityId"));
 
-            //根据区域id查找区域名称
-            String StartCityName = regionService.getRegionNameById(pd.getString("StartCityId"));
-            String EndCityName = regionService.getRegionNameById(pd.getString("EndCityId"));
+            }else{
+                pd.put("StartCityId",null);
+            }
+            if(pd.containsKey("EndCityId") && !"".equals(pd.getString("EndCityId"))) {
+                EndCityName = regionService.getRegionNameById(pd.getString("EndCityId"));
+            }else{
+                pd.put("EndCityId",null);
+            }
             pd.put("StartCityName",StartCityName);
             pd.put("EndCityName",EndCityName);
-            if(pd.getString("userId") == null) {
-                pd.put("userId","");
+
+            if(pd.getString("UserId") == null) {
+                pd.put("UserId","");
             }
             if(pd.containsKey("Price") && pd.getString("Price").equals("")) {
-                pd.put("Price",null);
+                pd.put("Price","0");
+            }
+
+            if(!pd.containsKey("Top")) {
+                pd.put("Top","0");
+            }
+            //小程序回传会StartDate和StartTime两个字段表示出发时间，而web端只会传startTime
+            if(pd.containsKey("StartDate") && !"".equals(pd.getString("StartDate"))) {
+                //拼装数据库需要的starttime的格式
+                String StartTime = pd.getString("StartDate")+" "+pd.getString("StartTime")+":00";
+                pd.put("StartTime",StartTime);
             }
             pd.put("SerialNo", DateUtil.getDateRandomCode());
             dao.save("wxmapper.insertTrip",pd);
@@ -204,6 +225,12 @@ public class WXservice {
         return map;
     }
 
+    /**
+     * 根据openid查找用户信息
+     * @param openid
+     * @return
+     * @throws Exception
+     */
     public Map<String,Object> findUserByOpenid(String openid) throws Exception{
         return(Map<String,Object>)dao.findForObject("wxmapper.findUserByOpenid",openid);
     }
