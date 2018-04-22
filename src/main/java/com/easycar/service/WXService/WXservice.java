@@ -59,12 +59,18 @@ public class WXservice {
                 StartCityName = regionService.getRegionNameById(pd.getString("StartCityId"));
 
             }else{
+                StartCityName = pd.getString("StartStation").substring(0,2);//没有出发城市id时，默认取出发地的前两个字
                 pd.put("StartCityId",null);
             }
             if(pd.containsKey("EndCityId") && !"".equals(pd.getString("EndCityId"))) {
                 EndCityName = regionService.getRegionNameById(pd.getString("EndCityId"));
             }else{
+                EndCityName = pd.getString("Destination").substring(0,2);
                 pd.put("EndCityId",null);
+            }
+
+            if((pd.containsKey("CartBrand") && pd.get("CartBrand") == null) || !pd.containsKey("CartBrand")) {
+                pd.put("CartBrand","");//如果CartBrand为null则存为空字符串
             }
             pd.put("StartCityName",StartCityName);
             pd.put("EndCityName",EndCityName);
