@@ -61,6 +61,9 @@ public class WXservice {
             if(pd.getString("userId") == null) {
                 pd.put("userId","");
             }
+            if(pd.containsKey("Price") && pd.getString("Price").equals("")) {
+                pd.put("Price",null);
+            }
             pd.put("SerialNo", DateUtil.getDateRandomCode());
             dao.save("wxmapper.insertTrip",pd);
             result = "1";
