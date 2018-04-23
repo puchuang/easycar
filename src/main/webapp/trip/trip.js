@@ -1,5 +1,6 @@
 ﻿
 $(function () {
+
     //1.初始化Table
     var oTable = new TableInit();
     oTable.Init();
@@ -9,7 +10,7 @@ $(function () {
     oButtonInit.Init();
 
 });
-
+var queryPar = "";
 var TableInit = function () {
     var oTableInit = new Object();
     //初始化Table
@@ -57,6 +58,9 @@ var TableInit = function () {
 
     //得到查询的参数
     oTableInit.queryParams = function (params) {
+        if(null != $(".form-control.input-outline").val()) {
+            queryPar = $(".form-control.input-outline").val();
+        }
         console.info(params);
         var temp = {   //这里的键的名字和控制器的变量名必须一直，这边改动，控制器也需要改成一样的
             // limit: params.limit,   //页面大小
@@ -64,7 +68,7 @@ var TableInit = function () {
             currentPage:params.offset/(params.limit)+1,
             showCount:params.limit,
             // departmentname: $("#txt_search_departmentname").val(),
-            statu: $("#txt_search_statu").val()
+            searchPar: queryPar
         };
         return temp;
     };
@@ -148,7 +152,7 @@ var ButtonInit = function () {
                 maxmin: true,
                 shade: 0.1,
                 btn: ['确认', '取消'],
-                yes: function (index, layero) {                    
+                yes: function (index, layero) {
                     //var iframeWin = window[layero.find('iframe')[0]['name']];
                     //iframeWin.submitForm();
                 },
@@ -173,15 +177,30 @@ var ButtonInit = function () {
                 layer.msg('请选择要删除的数据');
                 return;
             }
+            var listSerialNo = "";
+            if(arrselections.length == 1) {
+                listSerialNo = arrselections[0].SerialNo;
+            }else{
+                for (var i = 0; i < arrselections.length;i++){
+                    if(i == arrselections.length-1) {
+                        listSerialNo += arrselections[i].SerialNo;
+                    }else {
+                        listSerialNo += arrselections[i].SerialNo;
+                        listSerialNo += ",";
+                    }
+                }
+            }
+
+            // JSON.stringify(arrselections);
             layer.confirm('确认要删除选择的数据吗？', {
                 btn: ['确认', '取消'] //按钮
             }, function () {
                 $.ajax({
                     type: "post",
-                    url: "/Home/Delete",
-                    data: { "": JSON.stringify(arrselections) },
+                    url: "WxLogin/removeTrip",
+                    data: { "listSerialNo": listSerialNo },
                     success: function (data, status) {
-                        if (status == "success") {
+                        if (data.result == "success") {
                             layer.msg('提交数据成功');
                             $("#tableList").bootstrapTable('refresh');
                         }

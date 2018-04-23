@@ -41,6 +41,12 @@
         <if test="pd.curTime != null and pd.curTime != '' ">
             and date_format(a.StartTime,'%Y-%m-%d %H:%i:%s') >= #{pd.curTime}
         </if>
+        <if test="pd.searchPar != null and pd.searchPar != '' ">
+            and ((a.Phone like concat('%',#{pd.searchPar},'%')) or (a.LinkmanName like concat('%',#{pd.searchPar},'%'))
+                or (a.StartCityName like concat('%',#{pd.searchPar},'%')) or (a.EndCityName like concat('%',#{pd.searchPar},'%'))
+                or (a.StartStation like concat('%',#{pd.searchPar},'%')) or (a.Destination like concat('%',#{pd.searchPar},'%'))
+                or (a.Price like concat('%',#{pd.searchPar},'%')) or (a.Remark like concat('%',#{pd.searchPar},'%')) )
+        </if>
         <!--<if test="pd.startStation != null and pd.startStation != '' ">-->
             <!--and a.StartStation=#{pd.startStation}-->
         <!--</if>-->

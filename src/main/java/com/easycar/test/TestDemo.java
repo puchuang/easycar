@@ -2,6 +2,7 @@ package com.easycar.test;
 
 import com.easycar.dao.DaoSupport;
 
+import com.easycar.service.common.CommonService;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.HashMap;
@@ -10,7 +11,9 @@ import java.util.Map;
 public class TestDemo {
 
     public static void main(String[] args) {
-        testDatasource();
+//        testDatasource();
+
+//        testUpdate();
     }
 
     public static void testDatasource() {
@@ -27,4 +30,13 @@ public class TestDemo {
             e.printStackTrace();
         }
     }
+
+
+//    public static void testUpdate() {
+//        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/ApplicationContext.xml");
+//        CommonService commonService = (CommonService) context.getBean("commonService");
+//
+//        commonService.updateStatus("ecu_trip_driver","IsEffective","2","SerialNo","20180415234318648");
+//
+//    }
 }

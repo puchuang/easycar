@@ -18,29 +18,17 @@ public class CommonService{
      * @param tableName
      * @param statusName
      * @param resultCode
-     * @param queryLimit 允许批量更新
+     * @param queryLimit 允许批量更新 格式例如 ：(a,b,c,...)
      * @return
      */
-    public boolean updateStatus(String tableName,String statusName,String resultCode,String queryColumn,List<String> queryLimit) {
+    public boolean updateStatus(String tableName,String statusName,String resultCode,String queryColumn,String queryLimit) {
         boolean result = false;
         Map<String,String> paramMap = new HashMap<String, String>();
         paramMap.put("tableName",tableName);
         paramMap.put("statusName",statusName);
         paramMap.put("statusResult",resultCode);
         paramMap.put("queryColumn",queryColumn);
-
-        StringBuffer sb  = new StringBuffer("(");
-        if(queryLimit != null && queryLimit.size() > 0) {
-            for (int i = 0; i < queryLimit.size(); i++) {
-                if(i != queryLimit.size()-1) {
-                    sb.append(queryLimit.get(i)).append(",");
-                }else{
-                    sb.append(queryLimit.get(i)).append(")");
-                }
-
-            }
-        }
-        paramMap.put("queryLimit",sb.toString());
+        paramMap.put("queryLimit",queryLimit);
 
         try {
             dao.update("commonMapper.updateStatus",paramMap);

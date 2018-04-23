@@ -54,6 +54,10 @@ public class WXLoginController extends BaseController{
         if(!pageData.containsKey("curTime")) {
             pageData.put("curTime","");
         }
+
+        if(!pageData.containsKey("searchPar")) {
+            pageData.put("searchPar","");
+        }
         page.setPd(pageData);
         try {
 
@@ -159,26 +163,35 @@ public class WXLoginController extends BaseController{
     }
 
     /**
+     * 支持多条删除，以逗号分隔即可
      * 删除行程的方法，逻辑删除，置为失效即可
      * @return
      */
+    @RequestMapping("/removeTrip")
+    @ResponseBody
     public Map<String,Object> removeTrip() {
+        Map<String,Object> map = new HashMap<String, Object>();
         PageData pageData = this.getPageData();//得到页面传过来的数据
         String result = "fail";
         String msg = "";
 
-        List<String> listSerial = new ArrayList<String>();
-        String SerialNo = pageData.getString("SerialNo");
-        listSerial.add(SerialNo);
-        Map<String,Object> map = new HashMap<String, Object>();
-        boolean b = commonService.updateStatus("ecu_trip_driver", "IsEffective", "2", "SerialNo", listSerial);
+        if(pageData.containsKey("listSerialNo") || !"".equals(pageData.getString("listSerialNo"))) {
+            StringBuffer sb = new StringBuffer("(");
+            String serialNo = pageData.getString("listSerialNo");
+            sb.append(serialNo).append(")");
 
-        if(b) {
-            result = "success";
-            msg = "删除行程成功";
+            boolean b = commonService.updateStatus("ecu_trip_driver", "IsEffective", "2", "SerialNo", sb.toString());
+
+            if(b) {
+                result = "success";
+                msg = "删除行程成功";
+            }else{
+                result = "fail";
+                msg = "删除失败";
+            }
         }else{
             result = "fail";
-            msg = "删除失败";
+            msg = "请先选择需要删除的数据";
         }
         map.put("result",result);
         map.put("msg",msg);
