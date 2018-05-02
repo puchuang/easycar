@@ -179,8 +179,8 @@ public class WXservice {
         String ret="fail";
         String msg="";
 
-        String appid="wx68cce42499e45048";
-        String secret = "f6d0f0fc9b52b9b6c27261167dfe083b";
+        String appid="wx5172ed59fb860071";
+        String secret = "16e4d2579058842ba22e50be7739bad2";
         String grant_type = "authorization_code";
         String url = "https://api.weixin.qq.com/sns/jscode2session";
         String param = "appid="+appid+"&secret="+secret+"&js_code="+code+"&grant_type="+grant_type;
