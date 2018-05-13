@@ -153,13 +153,15 @@ public class WXLoginController extends BaseController{
         request.getSession().getId();
 
         PageData pageData = this.getPageData();
+        Map<String,Object> loginMap = new HashMap<String,Object>();
 
-        Map<String,Object> loginMap = wXservice.systemLogin(pageData);
-        if(loginMap != null && loginMap.containsKey("result")) {
-            return  loginMap;
-        }else{
-            return null;
+        try {
+            loginMap = wXservice.systemLogin(pageData);
+
+        }catch (Exception e){
+            e.printStackTrace();
         }
+        return loginMap;
     }
 
     /**

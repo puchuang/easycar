@@ -105,65 +105,121 @@ public class WXservice {
      * @param pd
      * @return
      */
-    public Map<String,Object> systemLogin(PageData pd) {
+    public Map<String,Object> systemLogin(PageData pd) throws Exception{
         Map<String,Object> returnMap = new HashMap<String, Object>();//返回数据
         Map<String,Object> userMap = new HashMap<String, Object>();//保存微信返回的用户信息
         String result="fail";
         String msg="";
         String userId = "";
+        String appcode="";
         if(pd.isEmpty()) {
             msg="请求数据为空，请检查后重试";
-        }else{
+        }else if(pd.containsKey("code")){//当前逻辑，有code证明进入小程序但未授权，有userId则证明用户授权成功
             String code = pd.getString("code");
-            Map<String,Object> loginMap = loginByCode(code);
+            if(pd.containsKey("appcode")) {
+                appcode = pd.getString("appcode");
+            }else{
+                msg = "appcode为空";
+            }
+            Map<String,Object> loginMap = loginByCode(code,appcode);
             if(loginMap.containsKey("ret") && "success".equals(loginMap.get("ret")))  {//说明与微信通信成功，并取得了openid和sessionKey
                 String openid = loginMap.get("openid").toString();
+//                String unionid = loginMap.get("unionid").toString();
                 String session_key = loginMap.get("session_key").toString();
 
-                //根据openid查找用户，存在则从数据看取出user信息，不存在则插入数据
-                try{
-                    Map<String, Object> localuserMap = findUserByOpenid(openid);//根据openid查询用户是否已存在
-                    if(localuserMap == null || "".equals(localuserMap.get("userId"))) {//用户不存在
-                        //调用工具类解析微信加密数据，得到明文信息
-                        String iv = pd.getString("iv");
-                        String encryptedData = pd.getString("encryptedData");
+                    //根据openid查找用户，存在则从数据看取出user信息，不存在则插入数据
+                    userMap.put("openid",openid);
+                    Map<String, Object> localuserMap = findUserByUniouidOrUserid(userMap);//根据openid查询用户是否已存在
+                    //如果没有传过来用户信息encryptedData且没有保存过次用户，则直接保存openid并生产userid
+                    if(!pd.containsKey("encryptedData") && localuserMap == null) {
 
-                        JSONObject userInfo = WeiXinUtil.getUserInfo(encryptedData, session_key, iv);
-                        if(userInfo != null && !userInfo.isEmpty()) {//判断返回数据不为空，则微信解析成功，查看用户是否存在，存在则更新，不存在则保存
-                            userMap.put("openId",userInfo.get("openId"));//encryptedData这种加密信息中有openid等敏感信息
-                            userMap.put("nickName",userInfo.get("nickName"));
-                            userMap.put("gender",userInfo.get("gender"));
-                            userMap.put("avatarUrl",userInfo.get("avatarUrl"));
-                            userMap.put("city",userInfo.get("city"));
-                            userMap.put("province",userInfo.get("province"));
-                            userMap.put("country",userInfo.get("country"));
-                            //执行插入操作
-                            userId =  UuidUtil.get32UUID();
-                            userMap.put("userId",userId);
-                            dao.save("wxmapper.saveUserInfo",userMap);
+                        userMap.put("openId",openid);
+                        userId =  UuidUtil.get32UUID();
+                        userMap.put("userId",userId);
 
-                            userMap.remove("openId");//给前端发送信息时不能携带openId
-                            returnMap.put("userInfo",userMap);
+                        //其他项默认为空
+                        userMap.put("nickName","");
+                        userMap.put("gender",0);
+                        userMap.put("avatarUrl","");
+                        userMap.put("city","");
+                        userMap.put("province","");
+                        userMap.put("country","");
+                        userMap.put("unionid","");
+                        dao.save("wxmapper.saveUserInfo",userMap);
+                    }else{//否则，即包含了用户信息，则查询用户是否存在且不存在nickName字段，证明没有保存用户具体信息，则更新，存在nickName字段则不更新，不存在用户信息则插入
+                        if(localuserMap != null && !localuserMap.get("openid").equals("") && !localuserMap.get("nickName").equals("")){//存在unionid和nickName，已保存用户完整信息则无需执行操作
                             result = "success";
-                            msg = "保存微信用户信息成功";
-//                            logger.info("保存微信用户信息成功，用户昵称："+userMap.get("nickname"));
-                    }else{
-                        msg = "解析微信加密数据失败";
-                        result = "fail";
+                            msg = "登录成功";
+                            returnMap.put("userInfo",localuserMap);
+                        } else if(localuserMap != null && !localuserMap.get("openid").equals("") && localuserMap.get("nickName").equals("")) {//存在unionid，但不存在nickName，则更新用户详细信息
+                            pd.put("session_key",session_key);
+                            Map<String, Object> weixinMap = transferPdToMap(pd);
+                            if(weixinMap != null && weixinMap.get("result").equals("success")) {//解析成功
+                                userMap.putAll(weixinMap);
+                                userMap.put("openid",localuserMap.get("openid"));
+                                //执行更新操作
+                                dao.update("wxmapper.updateUserInfo",userMap);
+
+                                userMap.remove("openId");//给前端发送信息时不能携带openId
+                                returnMap.put("userInfo",userMap);
+                                result = "success";
+                                msg = "更新微信用户信息成功";
+                            }else{
+                                result = "fail";
+                                msg = "更新微信用户信息失败";
+                            }
+                        }/*else if(localuserMap == null || "".equals(localuserMap.get("userId"))) {//用户不存在
+                            pd.put("session_key",session_key);
+                            Map<String, Object> weixinMap = transferPdToMap(pd);
+                            if(weixinMap != null && weixinMap.get("result").equals("success")) {//解析成功
+                                userMap.putAll(weixinMap);
+                                userMap.put("unionid",localuserMap.get("unionid"));
+                                //执行插入操作
+                                userId =  UuidUtil.get32UUID();
+                                userMap.put("userId",userId);
+                                dao.save("wxmapper.saveUserInfo",userMap);
+
+                                userMap.remove("openId");//给前端发送信息时不能携带openId
+                                returnMap.put("userInfo",userMap);
+                                result = "success";
+                                msg = "保存微信用户信息成功";
+                            }else{
+                                result = "fail";
+                                msg = "保存微信用户信息失败";
+                            }
+                        }*/
                     }
-                }else{
-                        result = "success";
-                        msg = "登录成功";
-                        returnMap.put("userInfo",localuserMap);
-                    }
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
                 returnMap.put("sk",session_key);
             }else{
                 msg = "访问微信失败";
                 result = "fail";
             }
+        }else if(pd.containsKey("userId")){//说明用户授权成功，更新用户信息
+            userId = pd.getString("userId");
+            //根据userId查找用户，存在则从数据看取出user信息，不存在则插入数据
+            userMap.put("userId",userId);
+            Map<String, Object> localuserMap = findUserByUniouidOrUserid(userMap);//根据userId查询用户是否已存在
+            if(localuserMap == null) {
+                msg = "不存在此用户";
+                result = "fail";
+            }else{
+                Map<String, Object> weixinMap = transferPdToMap(pd);
+                if(weixinMap != null && weixinMap.get("result").equals("success")) {//解析成功
+                    userMap.putAll(weixinMap);
+                    //执行更新操作
+                    dao.update("wxmapper.updateUserInfo",userMap);
+
+                    userMap.remove("openId");//给前端发送信息时不能携带openId
+                    returnMap.put("userInfo",userMap);
+                    result = "success";
+                    msg = "更新微信用户信息成功";
+                }else{
+                    result = "fail";
+                    msg = "更新微信用户信息失败";
+                }
+            }
+
+
         }
         returnMap.put("result",result);
         returnMap.put("msg",msg);
@@ -175,12 +231,19 @@ public class WXservice {
      * @param code
      * @return
      */
-    public Map<String,Object> loginByCode(String code) {
+    public Map<String,Object> loginByCode(String code,String appcode) {
         String ret="fail";
         String msg="";
+        String appid="";
+        String secret = "";
+        if("easycar".equalsIgnoreCase(appcode)) {
+            appid="wx5172ed59fb860071";
+            secret = "16e4d2579058842ba22e50be7739bad2";
+        }else if("pujingquan".equalsIgnoreCase(appcode)){
+            appid="wxa75c23f5dd298888";
+            secret = "e191252c125472b789a0145c634dee08";
+        }
 
-        String appid="wx5172ed59fb860071";
-        String secret = "16e4d2579058842ba22e50be7739bad2";
         String grant_type = "authorization_code";
         String url = "https://api.weixin.qq.com/sns/jscode2session";
         String param = "appid="+appid+"&secret="+secret+"&js_code="+code+"&grant_type="+grant_type;
@@ -232,12 +295,54 @@ public class WXservice {
     }
 
     /**
-     * 根据openid查找用户信息
-     * @param openid
+     * 根据unionid或者UserId查找用户信息
+     * @param map
      * @return
      * @throws Exception
      */
-    public Map<String,Object> findUserByOpenid(String openid) throws Exception{
-        return(Map<String,Object>)dao.findForObject("wxmapper.findUserByOpenid",openid);
+    public Map<String,Object> findUserByUniouidOrUserid(Map<String,Object> map) throws Exception{
+        return(Map<String,Object>)dao.findForObject("wxmapper.findUserByOpenid",map);
+    }
+
+    /**
+     * 得到pd中的信息，调用微信解析方法，并封装用户的map
+     * @param pd
+     * @return
+     */
+    public Map<String,Object> transferPdToMap(PageData pd){
+        Map<String,Object> resulrMap = new HashMap<String, Object>();
+        String msg = "";
+        String result = "";
+        if(pd == null) {
+            resulrMap = null;
+            result = "fail";
+            msg= "pd中没有参数，无法解析，请检查";
+
+        }else if(pd.containsKey("encryptedData") && pd.containsKey("iv")) {
+            String iv = pd.getString("iv");
+            String encryptedData = pd.getString("encryptedData");
+
+            JSONObject userInfo = WeiXinUtil.getUserInfo(encryptedData, pd.getString("session_key"), iv);
+            if(userInfo != null && !userInfo.isEmpty()) {//判断返回数据不为空，则微信解析成功，查看用户是否存在，存在则更新，不存在则保存
+                resulrMap.put("openId",userInfo.get("openId"));//encryptedData这种加密信息中有openid等敏感信息
+                resulrMap.put("nickName",userInfo.get("nickName"));
+                resulrMap.put("gender",userInfo.get("gender"));
+                resulrMap.put("avatarUrl",userInfo.get("avatarUrl"));
+                resulrMap.put("city",userInfo.get("city"));
+                resulrMap.put("province",userInfo.get("province"));
+                resulrMap.put("country",userInfo.get("country"));
+                resulrMap.put("unionid",userInfo.get("unionId"));//unionid从解析的用户信息中获取
+
+                result = "success";
+                msg = "解析并封装微信用户信息成功";
+//                            logger.info("保存微信用户信息成功，用户昵称："+userMap.get("nickname"));
+            }else{
+                result = "fail";
+                msg = "解析微信加密数据失败";
+            }
+        }
+        resulrMap.put("msg",msg);
+        resulrMap.put("result",result);
+        return  resulrMap;
     }
 }
