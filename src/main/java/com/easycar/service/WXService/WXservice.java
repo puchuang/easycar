@@ -115,21 +115,23 @@ public class WXservice {
             msg="请求数据为空，请检查后重试";
         }else{
             String code = pd.getString("code");
-            Map<String,Object> loginMap = loginByCode(code);
+            String appcode = pd.getString("appcode");
+            Map<String,Object> loginMap = loginByCode(code,appcode);
             if(loginMap.containsKey("ret") && "success".equals(loginMap.get("ret")))  {//说明与微信通信成功，并取得了openid和sessionKey
                 String openid = loginMap.get("openid").toString();
                 String session_key = loginMap.get("session_key").toString();
 
                 //根据openid查找用户，存在则从数据看取出user信息，不存在则插入数据
                 try{
-                    Map<String, Object> localuserMap = findUserByOpenid(openid);//根据openid查询用户是否已存在
-                    if(localuserMap == null || "".equals(localuserMap.get("userId"))) {//用户不存在
-                        //调用工具类解析微信加密数据，得到明文信息
-                        String iv = pd.getString("iv");
-                        String encryptedData = pd.getString("encryptedData");
+                    //调用工具类解析微信加密数据，得到明文信息(获取unionid并查询数据库中是否存在)
+                    String iv = pd.getString("iv");
+                    String encryptedData = pd.getString("encryptedData");
 
-                        JSONObject userInfo = WeiXinUtil.getUserInfo(encryptedData, session_key, iv);
-                        if(userInfo != null && !userInfo.isEmpty()) {//判断返回数据不为空，则微信解析成功，查看用户是否存在，存在则更新，不存在则保存
+                    JSONObject userInfo = WeiXinUtil.getUserInfo(encryptedData, session_key, iv);
+                    if(userInfo != null && !userInfo.isEmpty()) {
+                        userMap.put("unionid",userInfo.get("unionId"));
+                        Map<String, Object> localuserMap = findUserByUniouidOrUserid(userMap);//根据unionid查询用户是否已存在
+                        if(localuserMap == null || "".equals(localuserMap.get("userId"))) {//用户不存在,保存用户信息
                             userMap.put("openId",userInfo.get("openId"));//encryptedData这种加密信息中有openid等敏感信息
                             userMap.put("nickName",userInfo.get("nickName"));
                             userMap.put("gender",userInfo.get("gender"));
@@ -147,15 +149,17 @@ public class WXservice {
                             result = "success";
                             msg = "保存微信用户信息成功";
 //                            logger.info("保存微信用户信息成功，用户昵称："+userMap.get("nickname"));
-                    }else{
-                        msg = "解析微信加密数据失败";
-                        result = "fail";
-                    }
-                }else{
+                        } else{//存在，则直接返回用户信息
+
                         result = "success";
                         msg = "登录成功";
                         returnMap.put("userInfo",localuserMap);
                     }
+                    }else{
+                        msg = "解析微信加密数据失败";
+                        result = "fail";
+                    }
+
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -175,12 +179,19 @@ public class WXservice {
      * @param code
      * @return
      */
-    public Map<String,Object> loginByCode(String code) {
+    public Map<String,Object> loginByCode(String code,String appcode) {
         String ret="fail";
         String msg="";
+        String appid="";
+        String secret = "";
+        if("easycar".equalsIgnoreCase(appcode)) {
+            appid="wx5172ed59fb860071";
+            secret = "16e4d2579058842ba22e50be7739bad2";
+        }else if("pujingquan".equalsIgnoreCase(appcode)){
+            appid="wxa75c23f5dd298888";
+            secret = "e191252c125472b789a0145c634dee08";
+        }
 
-        String appid="wx5172ed59fb860071";
-        String secret = "16e4d2579058842ba22e50be7739bad2";
         String grant_type = "authorization_code";
         String url = "https://api.weixin.qq.com/sns/jscode2session";
         String param = "appid="+appid+"&secret="+secret+"&js_code="+code+"&grant_type="+grant_type;
@@ -232,12 +243,13 @@ public class WXservice {
     }
 
     /**
-     * 根据openid查找用户信息
-     * @param openid
+     * 根据unionid或者UserId查找用户信息
+     * @param map
      * @return
      * @throws Exception
      */
-    public Map<String,Object> findUserByOpenid(String openid) throws Exception{
-        return(Map<String,Object>)dao.findForObject("wxmapper.findUserByOpenid",openid);
+    public Map<String,Object> findUserByUniouidOrUserid(Map<String,Object> map) throws Exception{
+        return(Map<String,Object>)dao.findForObject("wxmapper.findUserByOpenid",map);
     }
+
 }
