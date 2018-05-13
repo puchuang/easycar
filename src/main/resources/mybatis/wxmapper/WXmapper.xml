@@ -160,20 +160,30 @@
             now()
             )
     </insert>
-    <!--根据openid查询用户-->
-    <select id="findUserByOpenid" parameterType="string" resultType="map">
+    <!--根据unionId或者userId或unionid查询用户-->
+    <select id="findUserByOpenid" parameterType="map" resultType="map">
         select
         userId,
-        Nickname nickName,
+        ifnull(Openid,'') openid,
+        ifnull(unionId,'') unionid,
+        ifnull(Nickname,'') nickName,
         Sex gender,
         Headimgurl avatarUrl,
         CityId city,
         ProvinceId province,
         CountryId country
         from ecu_user
-        where Openid=#{openid}
+        where 1=1
+        <if test="unionid != null and unionid != '' ">
+            and unionId=#{unionid}
+        </if>
+        <if test="userId != null and userId != '' ">
+            and userId=#{userId}
+        </if>
+        <if test="openid != null and openid != '' ">
+            and Openid=#{openid}
+        </if>
     </select>
-
     <!--插入用户信息-->
     <insert id="saveUserInfo" parameterType="map">
         insert into ecu_user
@@ -186,6 +196,7 @@
           CityId,
           ProvinceId,
           CountryId,
+          unionId,
           RegistTime
         )values(
           #{userId},
@@ -196,6 +207,7 @@
           #{city},
           #{province},
           #{country},
+          #{unionid},
           now()
         )
     </insert>
