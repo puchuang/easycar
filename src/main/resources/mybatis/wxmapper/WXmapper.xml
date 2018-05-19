@@ -105,6 +105,9 @@
             a.SeatTotal,
             a.SeatRemain,
             a.Price,
+            e.Nickname,
+            e.Headimgurl,
+            e.Sex,
             date_format(a.StartTime,'%Y-%m-%d %H:%i:%s')StartTime,
             a.Remark
         from ecu_trip_driver a

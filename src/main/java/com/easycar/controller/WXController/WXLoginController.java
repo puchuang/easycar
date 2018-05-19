@@ -77,27 +77,29 @@ public class WXLoginController extends BaseController{
 
     /**
      * 根据流水号获取行程详细信息
-     * @param serialNo
      * @return
      */
     @RequestMapping("/getTripInfo ")
     @ResponseBody
-    public Map<String,Object> getTripDetail(String serialNo) {
+    public Map<String,Object> getTripDetail() {
         Map<String,Object> returnMap = new HashMap<String,Object>();
         Map<String,Object> detailMap = new HashMap<String,Object>();
-        String outType = "fail";
+        String result = "fail";
+
+        PageData pd = this.getPageData();
+        String serialNo = pd.get("SerialNo").toString();
         if(!StringUtils.isEmpty(serialNo)){
             try{
                 detailMap =  wXservice.getTripBySerialNo(serialNo);
-                outType = "success";
+                result = "success";
                 logger.info("查询成功，流水号："+serialNo);
             }catch (Exception e){
-                outType = "fail";
+                result = "fail";
                 logger.info("查询错误，流水号："+serialNo);
                 e.printStackTrace();
             }
         }
-        returnMap.put("outType",outType);
+        returnMap.put("result",result);
         returnMap.put("data",detailMap);
         return returnMap;
     }
