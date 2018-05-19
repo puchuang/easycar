@@ -90,24 +90,25 @@
     <!--根据流水号查询行程详情-->
     <select id="getTripBySerialNo" parameterType="java.lang.String" resultType="map">
         select
-            a.SerialNo,
             a.LinkmanName,
             a.Phone,
             a.StartStation,
-            a.StartCityName,
-            a.EndCityName,
+            a.StartCityId,
+            a.EndCityId,
+            a.StartCityName StartCity,
+            a.EndCityName EndCity,
+            (select c.DicCode from ecs_dic_system c where c.DicValue = a.TripType) tripName,
             a.Destination,
-            (select b.DicValue from ecs_dic_system b where a.CartBrandId = b.DicId) CartBrand,
+            a.CartBrand,
+            a.TripType,
             a.CarNumber,
             a.SeatTotal,
             a.SeatRemain,
             a.Price,
-            a.StartTime,
-            a.Remark,
-            b.Nickname,
-            b.Headim
-        from ecu_trip_driver a.LinkmanId = e.userId
-        left join ecu_user e on a.
+            date_format(a.StartTime,'%Y-%m-%d %H:%i:%s')StartTime,
+            a.Remark
+        from ecu_trip_driver a
+        left join ecu_user e on a.LinkmanId = e.userId
         where a.SerialNo=#{serialNo}
 
     </select>
@@ -217,4 +218,113 @@
         set Nickname=#{nickname},Sex=#{gender},Headimgurl=#{avatarUrl},CityId=#{city},ProvinceId=#{province}
         where Openid=#{openid}
     </update>
+
+    <!--查询行程记录是否存在，防止重复发布-->
+    <select id="trivalExist" parameterType="map" resultType="map">
+        select
+        a.SerialNo
+        from
+        ecu_trip_driver a
+        where a.IsEffective='1' and a.LinkmanId = #{UserId} and a.Phone=#{Phone}
+        and date_format(a.StartTime,'%Y-%m-%d %H')=date_format(#{StartTime},'%Y-%m-%d %H')
+    </select>
+
+    <!--查询当前用户发布行程的数量-->
+    <select id="findCountToday" parameterType="map" resultType="map">
+        select
+        a.SerialNo
+        from
+        ecu_trip_driver a
+        where a.IsEffective='1' and a.LinkmanId = #{UserId}
+        and date_format(a.PublishTime,'%Y-%m-%d')=date_format(now(),'%Y-%m-%d')
+    </select>
+
+    <!--根据手机号或用户id查询用户在黑名单中的记录（手机号和用户id可能搜到多条）-->
+    <select id="isBlackList" parameterType="map" resultType="map">
+        select
+        a.UserId,a.Phone
+        from
+        ecu_blacklist a
+        where a.UserId = #{UserId}
+        <if test="Phone != null and Phone != ''">
+            or a.Phone = #{Phone}
+        </if>
+    </select>
+
+    <!--保存用户加入行程的操作-->
+    <insert id="saveJoinTrip" parameterType="map">
+        insert into
+        ecu_mid_trip_user
+        (
+            TripSerialNo,
+            UserId,
+            RegDate
+        )values(
+            #{SerialNo},
+            #{UserId},
+            now();
+        )
+    </insert>
+
+    <!--根据行程逐渐更新剩余座位数-1 取消行程时 +1 -->
+    <update id="updateTripSeat" parameterType="map">
+        update
+        ecu_trip_driver a
+        set
+        <if test="joinType != null and joinType == '1'">
+            a.SeatRemain = a.SeatRemain-1
+        </if>
+        <if test="joinType != null and joinType == '2'">
+            a.SeatRemain = a.SeatRemain+1
+        </if>
+        where a.SerialNo = #{SerialNo}
+    </update>
+
+    <!--根据用户id查询加入过的行程 -->
+    <select id="getUserTriplistPage" parameterType="page" resultType="map">
+        select
+        a.SerialNo,
+        a.LinkmanName,
+        a.Phone,
+        a.StartStation,
+        a.StartCityId,
+        a.EndCityId,
+        a.StartCityName StartCity,
+        a.EndCityName EndCity,
+        (select c.DicCode from ecs_dic_system c where c.DicValue = a.TripType) tripName,
+        a.Destination,
+        a.CartBrand,
+        a.TripType,
+        a.CarNumber,
+        a.SeatTotal,
+        a.SeatRemain,
+        a.Price,
+        date_format(a.StartTime,'%Y-%m-%d %H:%i:%s')StartTime,
+        a.Remark
+        from ecu_trip_driver a
+        where
+        a.IsEffective= '1'
+        and a.SerialNo in (select b.TripSerialNo from ecu_mid_trip_user b where b.IsEffective = '1' and b.UserId=#{UserId})
+        <if test="pd.StartTime != null and pd.StartTime != ''">
+            and date_format(a.StartTime,'%Y-%m-%d')=date_format(#{pd.StartTime},'%Y-%m-%d')
+        </if>
+        order by a.StartTime desc
+    </select>
+
+    <!--更新行程为有效或无效-->
+    <update id="updateJoinTrip" parameterType="map">
+        update
+        ecu_mid_trip_user
+        set IsEffective = #{IsEffective}
+        where TripSerialNo=#{SerialNo} and UserId=#{UserId}
+    </update>
+
+    <!--查询是否加入过此行程-->
+    <select id="isExists" parameterType="map" resultType="map">
+        select
+        a.*
+        from
+        ecu_mid_trip_user a
+        where a.TripSerialNo=#{SerialNo} and a.UserId=#{UserId}
+    </select>
 </mapper>

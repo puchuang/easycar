@@ -51,6 +51,7 @@ public class WXservice {
     public String insertTrip(PageData pd) throws Exception {
         String result="";
         Map<String,Object> map = new HashMap<String,Object>();
+
         if(!pd.isEmpty()) {
             String StartCityName = "";
             String EndCityName = "";
@@ -91,9 +92,14 @@ public class WXservice {
                 String StartTime = pd.getString("StartDate")+" "+pd.getString("StartTime")+":00";
                 pd.put("StartTime",StartTime);
             }
-            pd.put("SerialNo", DateUtil.getDateRandomCode());
-            dao.save("wxmapper.insertTrip",pd);
-            result = "1";
+            String validate = validateTrip(pd);
+            if("".equals(validate)) {
+                pd.put("SerialNo", DateUtil.getDateRandomCode());
+                dao.save("wxmapper.insertTrip",pd);
+                result = "1";
+            }else{
+                result = validate;
+            }
         }else {
             result = "3";
         }
@@ -252,4 +258,137 @@ public class WXservice {
         return(Map<String,Object>)dao.findForObject("wxmapper.findUserByOpenid",map);
     }
 
+    /**
+     * 校验用户是否未发布过行程，避免重复发布（根据用户id和出发时间）
+     * @param pd
+     * @return false：已发布 true:未发布
+     */
+    public boolean trivalExist(PageData pd) throws Exception{
+        Map<String,String> map = (Map<String,String>)dao.findForObject("wxmapper.trivalExist",pd);
+        if(map == null || map.isEmpty()) {
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * 查找用户今天发布消息的形成id集合（限制每天发布的数量）
+     * @param pd
+     * @return
+     * @throws Exception
+     */
+    public List<Map<String,String>> findCountToday(PageData pd) throws Exception{
+        return (List<Map<String,String>>)dao.findForList("wxmapper.findCountToday",pd);
+    }
+
+    /**
+     * 查询用户或手机号码是否存在黑名单中
+     * @param map
+     * @return false:不在黑名单  true：在黑名单中
+     * @throws Exception
+     */
+    public boolean isBlackList(Map<String,Object> map) throws Exception{
+        List<Map<String,String>> forList = (List<Map<String,String>>)dao.findForList("wxmapper.isBlackList", map);
+        if(forList == null || forList.size() == 0) {
+            return false;
+        }else {
+            return true;
+        }
+    }
+
+    /**
+     * 插入行程前进行必要的校验
+     * @param pd
+     * @return
+     * @throws Exception
+     */
+    public String validateTrip(PageData pd) throws Exception{
+        String result = "";
+        boolean blackList = isBlackList(pd);
+        if(blackList) {
+            result = "5";
+        }else{
+            boolean b = trivalExist(pd);
+            if(b) {
+                List<Map<String, String>> countToday = findCountToday(pd);
+                //限制每天发布信息的数量，每个用户每天发布不超过3条
+                if(countToday != null && countToday.size() >= 3) {
+                    result = "4";
+                }
+            }else{
+                result = "2";
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 加入行程
+     * @param page
+     * @return success：成功 fail:失败
+     */
+    public String saveJoinTrip(Page page) throws Exception{
+        String result = "";
+        PageData pd = page.getPd();
+        if(pd.get("joinType").equals("1")) {//加入行程
+            if(pd.containsKey("SerialNo") && pd.containsKey("UserId")) {//确定前端传回来的参数包含需要的数据
+                boolean validate = validateJoinTrip(page);
+                if(validate) {
+                    //查询是否加入过，加入过则更新为有效
+                    Map<String,String> midMap = (Map<String,String>)dao.findForObject("wxmapper.isExists",pd);
+                    if(midMap != null && !midMap.isEmpty()) {
+                        dao.update("wxmapper.updateJoinTrip",pd);//仅更新为有效即可
+                    }else{//没有加入过则保存记录
+                        dao.save("wxmapper.saveJoinTrip",pd);//保存加入行程至中间表
+                        dao.update("wxmapper.updateTripSeat",pd);
+                    }
+                    result = "1";
+                }else{
+                    result = "2";
+                }
+            }
+        }else if(pd.get("joinType").equals("2")) {//取消行程
+            pd.put("IsEffective","2");
+            if(pd.containsKey("SerialNo") && pd.containsKey("UserId")) {//确定前端传回来的参数包含需要的数据
+                    dao.update("wxmapper.updateJoinTrip",pd);//已加入的行程更新为无效
+                    dao.update("wxmapper.updateTripSeat",pd);
+                    result = "1";
+            }else{
+                result = "1";
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 根据用户id获取以前加入的行程（按出发时间倒叙排列）
+     * @param page
+     * @return
+     * @throws Exception
+     */
+    public List<Map<String,String>> getTripListByUserId(Page page) throws Exception {
+
+        return (List<Map<String,String>>)dao.findForList("wxmapper.getUserTriplistPage",page);
+    }
+
+    /**
+     * 加入行程前校验是否已加入当天出发的其他行程
+     * @param page
+     * @return true：加入的当天其他行程数量小于2，可以继续加入，否则  false 大于等于2则不允许加入
+     */
+    public boolean validateJoinTrip(Page page) throws Exception{
+        boolean result  = false;
+        PageData pd = page.getPd();
+        Map<String, Object> serialNoMap = getTripBySerialNo(pd.getString("SerialNo"));
+        pd.put("StartTime",serialNoMap.get("StartTime"));
+        page.setPd(pd);
+        List<Map<String, String>> tripList = getTripListByUserId(page);
+        if(tripList != null && tripList.size() >= 2) {
+            result = false;
+        }else{
+            result = true;
+        }
+        return result;
+    }
 }

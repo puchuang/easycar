@@ -1,11 +1,9 @@
 package com.easycar.controller.WXController;
 
-import com.alibaba.fastjson.JSONObject;
 import com.easycar.controller.BaseController;
 import com.easycar.entity.Page;
 import com.easycar.service.WXService.WXservice;
 import com.easycar.service.common.CommonService;
-import com.easycar.service.common.RegionService;
 import com.easycar.util.PageData;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
@@ -105,7 +103,7 @@ public class WXLoginController extends BaseController{
     }
 
     /**
-     * 根据流水号获取行程详细信息
+     * 提交行程
      * @return
      */
     @RequestMapping("/submitTrip")
@@ -122,13 +120,21 @@ public class WXLoginController extends BaseController{
                 outType = "success";
                 logger.info("行程发布成功");
             }else if("2".equals(result)) {
-                outContent = "当天不能重复发布";
+                outContent = "请勿重复发布";
                 outType = "fail";
-                logger.info("当天不能重复发布");
+                logger.info("形成已存在，不能重复发布");
             }else if("3".equals(result)) {
                 outContent = "发布失败";
                 outType = "fail";
                 logger.info("行程发布失败");
+            }else if("4".equals(result)) {
+                outContent = "每天限发布3条";
+                outType = "fail";
+                logger.info("每个客户每天仅允许发布3条，当前已超过次数限制");
+            }else if("5".equals(result)) {
+                outContent = "无权发布";
+                outType = "fail";
+                logger.info("黑名单用户无权发布行程，userId="+pageData.getString("UserId"));
             }
         } catch (Exception e) {
             outContent = "发布失败";
@@ -198,4 +204,71 @@ public class WXLoginController extends BaseController{
         return map;
     }
 
+    /**
+     * 加入/取消加入 行程
+     * @return
+     */
+    @RequestMapping("/joinTrip")
+    @ResponseBody
+    public Map<String,Object> joinTrip() {
+        Map<String,Object> map = new HashMap<String,Object>();
+        String result = "fail";
+        String joinOrCancel = "";
+        String msg = "加入行程失败";
+//        PageData pd = this.getPageData();
+        Page page = getPage();
+        try {
+            String returnMsg = wXservice.saveJoinTrip(page);
+            if(page.getPd().get("joinType").equals("1")) {
+                joinOrCancel = "加入";
+            }else if(page.getPd().get("joinType").equals("2")) {
+                joinOrCancel = "取消";
+            }
+            if(returnMsg.equals("1")) {
+                msg = joinOrCancel+"行程成功";
+                result  = "success";
+
+            }else if(returnMsg.equals("2")){
+                msg = "限加入2个行程";
+                result = "fail";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            msg = joinOrCancel+"行程失败";
+            result = "fail";
+        }
+        map.put("result",result);
+        map.put("msg",msg);
+        return map;
+    }
+
+    /**
+     * 根据条件获取行程列表
+
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping("/getTripListByUserId")
+    @ResponseBody
+//    public Map<String,Object> getTripList(String pageIndx, String triptype, String startCity, String endCity, String startDate) {
+    public Map<String,Object> getTripListByUserId(Page page) {
+        Map<String,Object> returnMap = new HashMap<String,Object>();
+        List<Map<String,String>> list = new ArrayList<Map<String, String>>();
+
+        PageData pageData = this.getPageData();
+        pageData.put("StartTime","");
+        page.setPd(pageData);
+        try {
+            list = wXservice.getTripListByUserId(page);
+            logger.info("查询行程列表成功");
+        }catch (Exception e){
+            logger.info("查询行程列表失败");
+            e.printStackTrace();
+        }
+//        returnMap.put("outType",outType);
+        int total = page.getTotalResult();
+        returnMap.put("total",total);
+        returnMap.put("rows",list);
+        return returnMap;
+    }
 }
