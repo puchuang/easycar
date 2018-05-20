@@ -20,12 +20,12 @@
             a.Destination,
             a.CartBrand,
             a.TripType,
-            a.CarNumber,
+            ifnull(a.CarNumber,'')CarNumber,
             a.SeatTotal,
             a.SeatRemain,
             a.Price,
-            e.Nickname,
-            e.Headimgurl,
+            ifnull(e.Nickname,'')Nickname,
+            ifnull(e.Headimgurl,'')Headimgurl,
             date_format(a.StartTime,'%Y-%m-%d %H:%i:%s')StartTime,
             a.Remark
         from ecu_trip_driver a
@@ -109,8 +109,8 @@
             a.SeatTotal,
             a.SeatRemain,
             a.Price,
-            e.Nickname,
-            e.Headimgurl,
+            ifnull(e.Nickname,'')Nickname,
+            ifnull(e.Headimgurl,'')Headimgurl,
             e.Sex,
             date_format(a.StartTime,'%Y-%m-%d %H:%i:%s')StartTime,
             a.Remark
@@ -123,8 +123,8 @@
     <select id="getJoinerListBySerialNo" parameterType="java.lang.String" resultType="map">
         select
         a.userId,
-        a.Nickname,
-        a.Headimgurl
+        ifnull(a.Nickname,'')Nickname,
+        ifnull(a.Headimgurl,'')Headimgurl
         from
         ecu_user a
         where a.userId

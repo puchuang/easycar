@@ -104,7 +104,8 @@ public class WXservice {
             }
             String validate = validateTrip(pd);
             if("".equals(validate)) {
-                pd.put("SerialNo", DateUtil.getDateRandomCode());
+                String SerialNo = DateUtil.getDateRandomCode();
+                pd.put("SerialNo", SerialNo);
                 dao.save("wxmapper.insertTrip",pd);
                 result = "1";
             }else{
@@ -289,7 +290,11 @@ public class WXservice {
      * @throws Exception
      */
     public List<Map<String,String>> findCountToday(PageData pd) throws Exception{
-        return (List<Map<String,String>>)dao.findForList("wxmapper.findCountToday",pd);
+        if("".equals(pd.get("UserId"))) {
+            return null;
+        }else{
+            return (List<Map<String,String>>)dao.findForList("wxmapper.findCountToday",pd);
+        }
     }
 
     /**
