@@ -24,9 +24,12 @@
             a.SeatTotal,
             a.SeatRemain,
             a.Price,
+            e.Nickname,
+            e.Headimgurl,
             date_format(a.StartTime,'%Y-%m-%d %H:%i:%s')StartTime,
             a.Remark
         from ecu_trip_driver a
+        left join ecu_user e on a.LinkmanId=e.userId
         where
           a.IsEffective= '1'
         <if test="pd.startCity != null and pd.startCity != '' ">
@@ -91,6 +94,7 @@
     <select id="getTripBySerialNo" parameterType="java.lang.String" resultType="map">
         select
             a.LinkmanName,
+            e.userId,
             a.Phone,
             a.StartStation,
             a.StartCityId,
@@ -116,6 +120,16 @@
 
     </select>
 
+    <select id="getJoinerListBySerialNo" parameterType="java.lang.String" resultType="map">
+        select
+        a.userId,
+        a.Nickname,
+        a.Headimgurl
+        from
+        ecu_user a
+        where a.userId
+        in (select b.UserId from ecu_mid_trip_user b where b.TripSerialNo=#{serialNo} and b.IsEffective='1')
+    </select>
     <!--保存行程信息-->
     <insert id="insertTrip" parameterType="map">
         insert into
@@ -263,9 +277,9 @@
             UserId,
             RegDate
         )values(
-            #{SerialNo},
-            #{UserId},
-            now();
+            #{serialNo},
+            #{userId},
+            now()
         )
     </insert>
 
@@ -274,13 +288,13 @@
         update
         ecu_trip_driver a
         set
-        <if test="joinType != null and joinType == '1'">
+        <if test='joinType =="1" '>
             a.SeatRemain = a.SeatRemain-1
         </if>
-        <if test="joinType != null and joinType == '2'">
+        <if test='joinType == "2" '>
             a.SeatRemain = a.SeatRemain+1
         </if>
-        where a.SerialNo = #{SerialNo}
+        where a.SerialNo = #{serialNo}
     </update>
 
     <!--根据用户id查询加入过的行程 -->
@@ -307,7 +321,7 @@
         from ecu_trip_driver a
         where
         a.IsEffective= '1'
-        and a.SerialNo in (select b.TripSerialNo from ecu_mid_trip_user b where b.IsEffective = '1' and b.UserId=#{UserId})
+        and a.SerialNo in (select b.TripSerialNo from ecu_mid_trip_user b where b.IsEffective = '1' and b.UserId=#{pd.userId})
         <if test="pd.StartTime != null and pd.StartTime != ''">
             and date_format(a.StartTime,'%Y-%m-%d')=date_format(#{pd.StartTime},'%Y-%m-%d')
         </if>
@@ -319,7 +333,7 @@
         update
         ecu_mid_trip_user
         set IsEffective = #{IsEffective}
-        where TripSerialNo=#{SerialNo} and UserId=#{UserId}
+        where TripSerialNo=#{serialNo} and UserId=#{userId}
     </update>
 
     <!--查询是否加入过此行程-->
@@ -328,6 +342,6 @@
         a.*
         from
         ecu_mid_trip_user a
-        where a.TripSerialNo=#{SerialNo} and a.UserId=#{UserId}
+        where a.TripSerialNo=#{serialNo} and a.UserId=#{userId}
     </select>
 </mapper>

@@ -68,7 +68,7 @@ public class WXLoginController extends BaseController{
             e.printStackTrace();
         }
 
-//        returnMap.put("outType",outType);
+        returnMap.put("outType",outType);
         int total = page.getTotalResult();
         returnMap.put("total",total);
         returnMap.put("rows",list);
@@ -84,13 +84,15 @@ public class WXLoginController extends BaseController{
     public Map<String,Object> getTripDetail() {
         Map<String,Object> returnMap = new HashMap<String,Object>();
         Map<String,Object> detailMap = new HashMap<String,Object>();
+        List<Map<String, Object>> joinerList = new ArrayList<Map<String, Object>>();
         String result = "fail";
 
         PageData pd = this.getPageData();
-        String serialNo = pd.get("SerialNo").toString();
+        String serialNo = pd.get("serialNo").toString();
         if(!StringUtils.isEmpty(serialNo)){
             try{
                 detailMap =  wXservice.getTripBySerialNo(serialNo);
+                joinerList = wXservice.getJoinerListBySerialNo(serialNo);
                 result = "success";
                 logger.info("查询成功，流水号："+serialNo);
             }catch (Exception e){
@@ -99,8 +101,9 @@ public class WXLoginController extends BaseController{
                 e.printStackTrace();
             }
         }
-        returnMap.put("result",result);
-        returnMap.put("data",detailMap);
+        returnMap.put("outType",result);
+        returnMap.put("tripInfo",detailMap);
+        returnMap.put("joinerList",joinerList);
         return returnMap;
     }
 
@@ -134,7 +137,7 @@ public class WXLoginController extends BaseController{
                 outType = "fail";
                 logger.info("每个客户每天仅允许发布3条，当前已超过次数限制");
             }else if("5".equals(result)) {
-                outContent = "无权发布";
+                outContent = "您已被禁止发布";
                 outType = "fail";
                 logger.info("黑名单用户无权发布行程，userId="+pageData.getString("UserId"));
             }
@@ -217,8 +220,9 @@ public class WXLoginController extends BaseController{
         String result = "fail";
         String joinOrCancel = "";
         String msg = "加入行程失败";
-//        PageData pd = this.getPageData();
-        Page page = getPage();
+        PageData pd = this.getPageData();
+        Page page = this.getPage();
+        page.setPd(pd);
         try {
             String returnMsg = wXservice.saveJoinTrip(page);
             if(page.getPd().get("joinType").equals("1")) {
@@ -233,14 +237,20 @@ public class WXLoginController extends BaseController{
             }else if(returnMsg.equals("2")){
                 msg = "限加入2个行程";
                 result = "fail";
+            }else if(returnMsg.equals("3")) {
+                msg = "剩余座位不足";
+                result = "fail";
+            }else if(returnMsg.equals("4")) {
+                msg = "加入行程失败";
+                result = "fail";
             }
         } catch (Exception e) {
             e.printStackTrace();
             msg = joinOrCancel+"行程失败";
             result = "fail";
         }
-        map.put("result",result);
-        map.put("msg",msg);
+        map.put("outType",result);
+        map.put("outContent",msg);
         return map;
     }
 
@@ -252,22 +262,23 @@ public class WXLoginController extends BaseController{
      */
     @RequestMapping("/getTripListByUserId")
     @ResponseBody
-//    public Map<String,Object> getTripList(String pageIndx, String triptype, String startCity, String endCity, String startDate) {
     public Map<String,Object> getTripListByUserId(Page page) {
         Map<String,Object> returnMap = new HashMap<String,Object>();
         List<Map<String,String>> list = new ArrayList<Map<String, String>>();
-
+        String outType = "fail";
         PageData pageData = this.getPageData();
         pageData.put("StartTime","");
         page.setPd(pageData);
         try {
             list = wXservice.getTripListByUserId(page);
+            outType = "success";
             logger.info("查询行程列表成功");
         }catch (Exception e){
+            outType = "fail";
             logger.info("查询行程列表失败");
             e.printStackTrace();
         }
-//        returnMap.put("outType",outType);
+        returnMap.put("outType",outType);
         int total = page.getTotalResult();
         returnMap.put("total",total);
         returnMap.put("rows",list);

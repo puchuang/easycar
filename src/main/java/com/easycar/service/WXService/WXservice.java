@@ -44,6 +44,16 @@ public class WXservice {
     }
 
     /**
+     * 获取该行程参与者的相关信息
+     * @param serialNo
+     * @return
+     * @throws Exception
+     */
+    public List<Map<String,Object>> getJoinerListBySerialNo(String serialNo) throws Exception{
+        return (List<Map<String,Object>>)dao.findForList("wxmapper.getJoinerListBySerialNo",serialNo);
+    }
+
+    /**
      * 插入行程信息(单条)
      * @param pd
      * @return
@@ -332,12 +342,13 @@ public class WXservice {
         String result = "";
         PageData pd = page.getPd();
         if(pd.get("joinType").equals("1")) {//加入行程
-            if(pd.containsKey("SerialNo") && pd.containsKey("UserId")) {//确定前端传回来的参数包含需要的数据
-                boolean validate = validateJoinTrip(page);
-                if(validate) {
+            if(pd.containsKey("serialNo") && pd.containsKey("userId")) {//确定前端传回来的参数包含需要的数据
+                String validate = validateJoinTrip(page);
+                if("".equals(validate)) {
                     //查询是否加入过，加入过则更新为有效
                     Map<String,String> midMap = (Map<String,String>)dao.findForObject("wxmapper.isExists",pd);
                     if(midMap != null && !midMap.isEmpty()) {
+                        pd.put("IsEffective","1");
                         dao.update("wxmapper.updateJoinTrip",pd);//仅更新为有效即可
                     }else{//没有加入过则保存记录
                         dao.save("wxmapper.saveJoinTrip",pd);//保存加入行程至中间表
@@ -345,17 +356,17 @@ public class WXservice {
                     }
                     result = "1";
                 }else{
-                    result = "2";
+                    result = validate;
                 }
             }
         }else if(pd.get("joinType").equals("2")) {//取消行程
             pd.put("IsEffective","2");
-            if(pd.containsKey("SerialNo") && pd.containsKey("UserId")) {//确定前端传回来的参数包含需要的数据
+            if(pd.containsKey("serialNo") && pd.containsKey("userId")) {//确定前端传回来的参数包含需要的数据
                     dao.update("wxmapper.updateJoinTrip",pd);//已加入的行程更新为无效
                     dao.update("wxmapper.updateTripSeat",pd);
                     result = "1";
             }else{
-                result = "1";
+                result = "4";
             }
         }
         return result;
@@ -377,18 +388,27 @@ public class WXservice {
      * @param page
      * @return true：加入的当天其他行程数量小于2，可以继续加入，否则  false 大于等于2则不允许加入
      */
-    public boolean validateJoinTrip(Page page) throws Exception{
-        boolean result  = false;
+    public String validateJoinTrip(Page page) throws Exception{
+//        boolean result  = false;
+        String result = "";
         PageData pd = page.getPd();
-        Map<String, Object> serialNoMap = getTripBySerialNo(pd.getString("SerialNo"));
-        pd.put("StartTime",serialNoMap.get("StartTime"));
-        page.setPd(pd);
-        List<Map<String, String>> tripList = getTripListByUserId(page);
-        if(tripList != null && tripList.size() >= 2) {
-            result = false;
+        Map<String, Object> serialNoMap = getTripBySerialNo(pd.getString("serialNo"));
+        int joinNumber = 1 ;
+        int SeatRemain = Integer.parseInt(serialNoMap.get("SeatRemain").toString());
+        //判断如果剩余座位小于要加入的人数，则返回 3  剩余座位不足
+        if(SeatRemain < joinNumber) {
+            result = "3";
         }else{
-            result = true;
+            pd.put("StartTime",serialNoMap.get("StartTime"));
+            page.setPd(pd);
+            List<Map<String, String>> tripList = getTripListByUserId(page);
+            if(tripList != null && tripList.size() >= 2) {
+                result = "2";
+            }else{
+                result = "";
+            }
         }
+
         return result;
     }
 }
